@@ -5,6 +5,8 @@ import com.redhat.restdemo.model.service.AuthorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -20,14 +22,15 @@ public class AuthorController {
     private final Logger LOGGER = LoggerFactory.getLogger(AuthorController.class);
 
     @GetMapping("/authors")
-    public Iterable<Author> listAuthors() {
+    public ResponseEntity<Iterable<Author>> listAuthors() {
         LOGGER.info("Just hit author endpoint!");
-        return authorService.findAll();
+        Iterable<Author> authors = authorService.findAll();
+        return new ResponseEntity<>(authors, HttpStatus.OK);
     }
 
     @PostMapping("/author/add")
-    public Author addAuthor(@RequestBody Author author) {
-        Author y =  authorService.addAuthor(author);
-        return y;
+    public ResponseEntity<Author> addAuthor(@RequestBody Author author) {
+        Author createdAuthor =  authorService.addAuthor(author);
+        return new ResponseEntity<>(createdAuthor, HttpStatus.CREATED);
     }
 }

@@ -4,7 +4,22 @@ Project is specifically created to help solvers of this learn Java, Rest, Docker
 technologies. Task assignment is situated as complete project which includes development, testing, dev ops, ...
 
 In this project you should create Rest API for library. Via Rest API you should be able to create
-Book, Authors and Libraries. 
+Book, Authors and Libraries.
+
+## Prerequisites
+- You should get familiar with Git. Whole project should be versioned in GitHub. For that you should
+  learn how to commit changes, work with branches, pull requests, rebases and proper commit messages
+- Another important thing is that you should be familiar with [Rest API](https://aws.amazon.com/what-is/restful-api/) and [HTTP/S response status codes](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status) 
+- For those there is nice interactive [cousre](https://learngitbranching.js.org/) and [guideline](https://initialcommit.com/blog/git-commit-messages-best-practices) for writing commit messages
+- All work should be done in separate pull requests, These requests will contain only work that is related to current task/part of the project (for example pull request - Create database entities will contain
+  only entities under `model/entity` module).
+- In order to work on this project you should have install following things:
+    1. [Java 11](https://tecadmin.net/install-java-on-fedora/)
+    2. [Maven](https://tecadmin.net/install-apache-maven-on-fedora/)
+    3. [IntelliJ IDEA Community Edition](https://www.jetbrains.com/idea/download/#section=linux) 
+    4. [Docker](https://docs.docker.com/engine/install/fedora/)
+    5. I personally recommend [DataGrip](https://www.jetbrains.com/datagrip/download/#section=linux) for databases. All IntelliJ products are free for education purposes (just need to create account
+with ISIC card number) 
 ## Assignment
 
 1. Create data model for your library Rest API
