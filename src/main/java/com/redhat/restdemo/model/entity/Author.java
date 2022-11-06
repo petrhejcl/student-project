@@ -16,7 +16,7 @@ import javax.persistence.Table;
  * This is a short example of mapping class that should be completed by all other attributes.
  */
 @Entity
-@Table(name = "author")
+@Table(name = "AUTHOR")
 @Getter
 @Setter
 @AllArgsConstructor
@@ -33,5 +33,10 @@ public class Author {
     public Author(Author author) {
         name = author.getName();
         surname = author.getSurname();
+    }
+
+    public Author(String name, String surname) {
+        this.name = name;
+        this.surname = surname;
     }
 }
