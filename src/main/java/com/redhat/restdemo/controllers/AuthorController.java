@@ -19,7 +19,7 @@ public class AuthorController {
     @Autowired
     private AuthorService authorService;
 
-    private final Logger LOGGER = LoggerFactory.getLogger(AuthorController.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AuthorController.class);
 
     @GetMapping("/authors")
     public ResponseEntity<Iterable<Author>> listAuthors() {

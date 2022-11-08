@@ -16,7 +16,7 @@ import javax.persistence.Table;
  * This is a short example of mapping class that should be completed by all other attributes.
  */
 @Entity
-@Table(name = "AUTHOR")
+@Table(name = "author")
 @Getter
 @Setter
 @AllArgsConstructor

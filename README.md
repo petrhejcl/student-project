@@ -49,3 +49,21 @@ Book, Authors and Libraries.
      (For example, forbidden characters should not be passed. Name has some rules (a-zA-Z),...)
    - You can find examples of services in `AuthorServiceImpl`. All endpoints that should execute some operation
      will receive object via [JSON](https://www.baeldung.com/spring-mvc-send-json-parameters) format.
+3. Create testsuite for the API you created
+    - First you should create unit tests for all the functionality
+      - Here you can find short description about [unit testing](https://www.baeldung.com/java-unit-testing-best-practices)
+      - Unit testing is basically testing one functionality alone. In this case you have several components: database service, rest endpoints. For unit testing you have to test functionality
+        of rest endpoint alone and not together with database. For that you have to use [mocks](https://stackoverflow.com/questions/2665812/what-is-mocking). There is short overview of the unit testing
+        in [spring boot](https://www.section.io/engineering-education/getting-started-with-unit-testing-with-spring-boot/)
+    - Create integration tests for the Rest API
+      - Some tests are already prepared in `test/java` module. You can use these as an example
+      - Integration testing is basically opposite as unit testing. You are testing integration of the components (database services + rest endpoints)
+    - You should aim to 100% coverage on both unit and integration tests. That means all functionality should be tested!
+4. Create [GitHub Actions](https://docs.github.com/en/actions) workflows
+    - This part of the assignment should introduce you to world of dev/ops.
+    - You should prepare two separate workflows
+        1. Pull request verify
+            - This workflow should be triggered for all pull requests open against the repository
+            - Workflow should run all tests in the repository, execute maven checkstyle and try building docker image
+        2. Build and push image
+            - Workflow should build the Docker image for this application and push image to quay.io image hub

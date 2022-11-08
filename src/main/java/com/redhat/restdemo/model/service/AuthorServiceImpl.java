@@ -13,7 +13,7 @@ import java.util.Optional;
 public class AuthorServiceImpl implements AuthorService {
 
     @Autowired
-    AuthorRepository repository;
+    private AuthorRepository repository;
 
     @Override
     public Optional<Author> findAuthorById(int id) {
