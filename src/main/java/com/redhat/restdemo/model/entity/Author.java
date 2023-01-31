@@ -25,18 +25,21 @@ public class Author {
     private @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(columnDefinition = "SERIAL")
-    int id;
+    Integer id;
 
     private String name;
     private String surname;
+    private Integer yearOfBirth;
 
     public Author(Author author) {
         name = author.getName();
         surname = author.getSurname();
+        yearOfBirth = author.getYearOfBirth();
     }
 
-    public Author(String name, String surname) {
+    public Author(String name, String surname, Integer yearOfBirth) {
         this.name = name;
         this.surname = surname;
+        this.yearOfBirth = yearOfBirth;
     }
 }
