@@ -44,7 +44,7 @@ CREATE TABLE public.author (
     id integer NOT NULL,
     name character varying(60),
     surname character varying(80),
-    year_of_birth integer
+    yearOfBirth integer
 );
 
 
@@ -55,9 +55,9 @@ ALTER TABLE public.author OWNER TO "compose-postgres";
 --
 
 CREATE TABLE public.authorship (
-    author_id integer NOT NULL,
-    book_isbn character varying(13) NOT NULL,
-    authorship_order integer
+    authorId integer NOT NULL,
+    bookISBN character varying(13) NOT NULL,
+    authorshipOrder integer
 );
 
 
@@ -98,7 +98,7 @@ CREATE TABLE public.library (
     name character varying(80),
     city character varying(80),
     street character varying(80),
-    street_number integer,
+    streetNumber integer,
     description character varying(150)
 );
 
@@ -110,8 +110,8 @@ ALTER TABLE public.library OWNER TO "compose-postgres";
 --
 
 CREATE TABLE public.ownership (
-    book_isbn character varying(13) NOT NULL,
-    library_id integer NOT NULL
+    bookISBN character varying(13) NOT NULL,
+    libraryId integer NOT NULL
 );
 
 
