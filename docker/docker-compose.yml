@@ -1,0 +1,11 @@
+version: '3.6'
+services:
+  db:
+    image: postgres:14.3-alpine
+    build:
+      context: ./db
+    environment:
+      - POSTGRES_USER=compose-postgres
+      - POSTGRES_PASSWORD=compose-postgres
+    ports:
+      - '5432:5432'

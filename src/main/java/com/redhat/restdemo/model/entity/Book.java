@@ -12,34 +12,34 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-/**
- * This is a short example of mapping class that should be completed by all other attributes.
- */
+import java.sql.Date;
+
+
 @Entity
-@Table(name = "author")
+@Table(name = "book")
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Author {
+public class Book {
     private @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(columnDefinition = "SERIAL")
-    Integer id;
+    String ISBN;
 
     private String name;
-    private String surname;
-    private Integer yearOfBirth;
+    private Date release;
+    private String genre;
 
-    public Author(Author author) {
-        name = author.getName();
-        surname = author.getSurname();
-        yearOfBirth = author.getYearOfBirth();
+    public Book(Book book) {
+        name = book.getName();
+        release = book.getRelease();
+        genre = book.getGenre();
     }
 
-    public Author(String name, String surname, Integer yearOfBirth) {
+    public Book(String name, Date release, String genre) {
         this.name = name;
-        this.surname = surname;
-        this.yearOfBirth = yearOfBirth;
+        this.release = release;
+        this.genre = genre;
     }
 }
