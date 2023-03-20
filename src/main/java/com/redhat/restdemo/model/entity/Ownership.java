@@ -22,10 +22,22 @@ public class Ownership{
     private @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(columnDefinition = "SERIAL")
-    Integer authorId;
+    Integer id;
 
-    private @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(columnDefinition = "SERIAL")
-    Integer libraryId;
+    @Column(name = "libraryId")
+    private Integer libraryId;
+
+    @Column(name = "isbn")
+    private Long isbn;
+
+    public Ownership(Ownership ownership) {
+        libraryId = ownership.getLibraryId();
+        isbn = ownership.getIsbn();
+    }
+
+    public Ownership(Integer libraryId, Long isbn) {
+        this.libraryId = libraryId;
+        this.isbn = isbn;
+    }
+
 }

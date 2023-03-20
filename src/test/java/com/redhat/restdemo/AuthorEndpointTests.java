@@ -48,8 +48,8 @@ class AuthorEndpointTests {
 	static {
 		postgresqlContainer = new PostgreSQLContainer("postgres:14")
 				.withDatabaseName("postgres")
-				.withUsername("foo")
-				.withPassword("secret");
+				.withUsername("compose-postgres")
+				.withPassword("compose-postgres");
 		postgresqlContainer.start();
 	}
 
