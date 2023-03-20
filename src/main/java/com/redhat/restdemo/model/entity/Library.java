@@ -22,12 +22,21 @@ public class Library {
     private @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(columnDefinition = "SERIAL")
-    String id;
+    Integer id;
 
+    @Column(name = "name")
     private String name;
+
+    @Column(name = "city")
     private String city;
+
+    @Column(name = "street")
     private String street;
+
+    @Column(name = "street_number")
     private Integer streetNumber;
+
+    @Column(name = "description")
     private String description;
 
     public Library(Library library) {

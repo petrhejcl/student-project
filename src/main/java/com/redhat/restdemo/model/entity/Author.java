@@ -27,8 +27,13 @@ public class Author {
     @Column(columnDefinition = "SERIAL")
     Integer id;
 
+    @Column(name = "name")
     private String name;
+
+    @Column(name = "surname")
     private String surname;
+
+    @Column(name = "year_of_birth")
     private Integer yearOfBirth;
 
     public Author(Author author) {

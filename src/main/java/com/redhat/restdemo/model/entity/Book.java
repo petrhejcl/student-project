@@ -19,27 +19,32 @@ import java.sql.Date;
 @Table(name = "book")
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
 public class Book {
     private @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(columnDefinition = "SERIAL")
-    String ISBN;
+    @Column(name = "isbn")
+    Long isbn;
 
+    @Column(name = "name")
     private String name;
-    private Date release;
+
+    @Column(name = "year_of_release")
+    private Integer yearOfRelease;
+
+    @Column(name = "genre")
     private String genre;
 
     public Book(Book book) {
+        isbn = book.getIsbn();
         name = book.getName();
-        release = book.getRelease();
+        yearOfRelease = book.getYearOfRelease();
         genre = book.getGenre();
     }
 
-    public Book(String name, Date release, String genre) {
+    public Book(Long isbn, String name, Integer yearOfRelease, String genre) {
+        this.isbn = isbn;
         this.name = name;
-        this.release = release;
+        this.yearOfRelease = yearOfRelease;
         this.genre = genre;
     }
 }

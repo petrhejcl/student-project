@@ -1,11 +1,26 @@
-version: '3.6'
+version: '3.9'
+
 services:
-  db:
-    image: postgres:14.3-alpine
+  app:
+    image: 'docker-spring-boot-postgres:latest'
     build:
-      context: ./db
+      context: ./app
+    container_name: app
+    depends_on:
+      - db
     environment:
-      - POSTGRES_USER=compose-postgres
-      - POSTGRES_PASSWORD=compose-postgres
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/postgres
+      - SPRING_DATASOURCE_USERNAME=compose-postgres
+      - SPRING_DATASOURCE_PASSWORD=compose-postgres
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
     ports:
-      - '5432:5432'
+      - "8080:8080"
+  db:
+    container_name: db
+    image: postgres:13-alpine
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: compose-postgres
+      POSTGRES_PASSWORD: compose-postgres
+      POSTGRES_DB: compose-postgres

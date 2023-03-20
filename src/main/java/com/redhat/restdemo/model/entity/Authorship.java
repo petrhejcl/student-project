@@ -22,20 +22,21 @@ public class Authorship{
     private @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(columnDefinition = "SERIAL")
-    Integer authorId;
+    Integer id;
 
-    private @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(columnDefinition = "SERIAL")
-    Integer bookId;
+    @Column(name = "isbn")
+    private Long isbn;
 
-    private Integer authorshipOrder;
+    @Column(name = "author_id")
+    private Integer authorId;
 
-    public Authorship(Authorship authorship) {
-        authorshipOrder = authorship.getAuthorshipOrder();
+    public Authorship(Long isbn, Integer authorId) {
+        this.isbn = isbn;
+        this.authorId = authorId;
     }
 
-    public Authorship(Integer authorshipOrder) {
-        this.authorshipOrder = authorshipOrder;
+    public Authorship(Authorship authorship) {
+        isbn = authorship.getIsbn();
+        authorId = authorship.getAuthorId();
     }
 }
