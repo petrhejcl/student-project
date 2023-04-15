@@ -86,8 +86,8 @@ public class AuthorController {
         return new ResponseEntity<>(deletedAuthor, HttpStatus.OK);
     }
 
-    @DeleteMapping("/{id}/books")
-    public ResponseEntity<Book> deleteBookFromAuthor(@PathVariable Integer id, Long isbn) {
+    @DeleteMapping("/{id}/books/delete")
+    public ResponseEntity<Book> deleteBookFromAuthor(@PathVariable Integer id, @RequestBody Long isbn) {
         Book deletedBook = authorService.deleteBookFromAuthor(id, isbn);
         if (deletedBook == null) {
             LOGGER.info("Book with given ISBN either is not listed or is not written by author with given id");

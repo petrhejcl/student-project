@@ -66,6 +66,10 @@ public class AuthorServiceImpl implements AuthorService {
     public Author deleteAuthor(Integer id) {
         try {
             Author author = findAuthorById(id).get();
+            for (Book book : bookRepository.findBooksByAuthor(id)) {
+                Integer authorshipId = authorshipRepository.findAuthorshipId(id, book.getIsbn());
+                authorshipRepository.deleteById(authorshipId);
+            }
             authorRepository.deleteById(id);
             return author;
         } catch (Exception e) {
