@@ -54,7 +54,7 @@ public class LibraryController {
         return new ResponseEntity<>(updatedLibrary, HttpStatus.OK);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{id}/delete")
     public ResponseEntity<Library> deleteLibrary(@PathVariable Integer id) {
         Library deletedLibrary = libraryService.deleteLibrary(id);
         if (deletedLibrary == null) {

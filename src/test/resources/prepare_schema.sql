@@ -1,3 +1,3 @@
-INSERT INTO AUTHOR VALUES (1, 'Julius', 'Ceasar');
-INSERT INTO AUTHOR VALUES (2, 'John', 'Rambo');
-INSERT INTO AUTHOR VALUES (3, 'John', 'McClain');
+INSERT INTO AUTHOR VALUES (20, 'Julius', 'Ceasar');
+INSERT INTO AUTHOR VALUES (50, 'John', 'Rambo');
+INSERT INTO AUTHOR VALUES (30, 'John', 'McClain');

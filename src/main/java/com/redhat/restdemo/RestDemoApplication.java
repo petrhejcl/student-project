@@ -1,7 +1,11 @@
 package com.redhat.restdemo;
 
+import com.redhat.restdemo.model.entity.Author;
+import com.redhat.restdemo.model.entity.Book;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+
 
 @SpringBootApplication
 public class RestDemoApplication {
