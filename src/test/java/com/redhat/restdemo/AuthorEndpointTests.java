@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -23,7 +24,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import java.util.Collections;
 import java.util.List;
 
-import static com.redhat.restdemo.utils.utils.countAuthors;
+import static com.redhat.restdemo.utils.utils.countGetResult;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
@@ -122,17 +123,17 @@ class AuthorEndpointTests {
 	void testDeleteAuthorEndpoint() throws JsonProcessingException {
 		String authorUrl = createURLWithPort("/author");
 
-		ResponseEntity<String> getResponse = testRequests.get(authorUrl);
-
-		ObjectMapper objectMapper = new ObjectMapper();
-
 		Iterable<Author> authors = authorRepository.findAll();
 
-		Long authorsCounter = countAuthors(authors);
+		Long authorsCounter = countGetResult(Collections.singleton(authors));
 
 		testRequests.delete(authorUrl + "/" + 1);
 
-		assertThat(authorsCounter - 1, is(countAuthors(authorRepository.findAll())));
+		assertThat(authorsCounter - 1, is(countGetResult(Collections.singleton(authorRepository.findAll()))));
+
+		testRequests.delete(authorUrl + "/" + 2);
+
+		assertThat(authorsCounter - 2, is(countGetResult(Collections.singleton(authorRepository.findAll()))));
 
 		for (Author author : authorRepository.findAll()) {
 			Integer authorId = author.getId();
@@ -140,7 +141,32 @@ class AuthorEndpointTests {
 			testRequests.delete(deleteAuthorUrl);
 		}
 
-		assertThat(countAuthors(authorRepository.findAll()), is(0L));
+		assertThat(countGetResult(Collections.singleton(authorRepository.findAll())), is(0L));
 
+	}
+
+	@Test
+	void testGetAuthorById() throws JsonProcessingException {
+		String authorUrl = createURLWithPort("/author");
+
+		ObjectMapper objectMapper = new ObjectMapper();
+
+		ResponseEntity<String> ceasarResponse = testRequests.get(authorUrl + "/" + 20);
+		ResponseEntity<String> ramboResponse = testRequests.get(authorUrl + "/" + 50);
+		ResponseEntity<String> mcclainResponse = testRequests.get(authorUrl + "/" + 30);
+
+		Author ceasar = objectMapper.readValue(ceasarResponse.getBody(), new TypeReference<>() {
+		});
+		Author rambo = objectMapper.readValue(ramboResponse.getBody(), new TypeReference<>() {
+		});
+		Author mcclain = objectMapper.readValue(mcclainResponse.getBody(), new TypeReference<>() {
+		});
+
+		assertThat(ceasar.getName(), is ("Julius"));
+		assertThat(ceasar.getSurname(), is ("Ceasar"));
+		assertThat(rambo.getName(), is ("John"));
+		assertThat(rambo.getSurname(), is ("Rambo"));
+		assertThat(mcclain.getName(), is ("John"));
+		assertThat(mcclain.getSurname(), is ("McClain"));
 	}
 }

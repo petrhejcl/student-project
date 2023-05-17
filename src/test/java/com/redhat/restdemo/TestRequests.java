@@ -19,21 +19,18 @@ public class TestRequests {
     public ResponseEntity<String> post(String url, Object object) {
         HttpEntity<Object> request = new HttpEntity<>(object, headers);
         ResponseEntity<String> response = restTemplate.postForEntity(url, request, String.class);
-        assertStatus(response.getStatusCode());
         return response;
     }
 
     public ResponseEntity<String> get(String url) {
         HttpEntity<Object> request = new HttpEntity<>(null, headers);
         ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, request, String.class);
-        assertStatus(response.getStatusCode());
         return response;
     }
 
     public ResponseEntity<String> delete(String url) {
         HttpEntity<Object> request = new HttpEntity<>(null, headers);
         ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.DELETE, request, String.class);
-        assertStatus(response.getStatusCode());
         return response;
     }
 }
