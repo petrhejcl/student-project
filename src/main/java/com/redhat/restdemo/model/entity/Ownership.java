@@ -24,20 +24,20 @@ public class Ownership{
     @Column(columnDefinition = "SERIAL")
     Integer id;
 
-    @Column(name = "libraryId")
+    @Column(name = "library_id")
     private Integer libraryId;
 
-    @Column(name = "isbn")
-    private Long isbn;
+    @Column(name = "book_id")
+    private Integer bookId;
 
     public Ownership(Ownership ownership) {
         libraryId = ownership.getLibraryId();
-        isbn = ownership.getIsbn();
+        bookId = ownership.getBookId();
     }
 
-    public Ownership(Integer libraryId, Long isbn) {
+    public Ownership(Integer libraryId, Integer bookId) {
         this.libraryId = libraryId;
-        this.isbn = isbn;
+        this.bookId = bookId;
     }
 
 }

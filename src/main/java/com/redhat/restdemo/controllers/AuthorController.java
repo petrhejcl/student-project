@@ -39,11 +39,11 @@ public class AuthorController {
         return new ResponseEntity<>(author, HttpStatus.OK);
     }
 
-    @GetMapping("/{id}/books")
-    public ResponseEntity<Iterable<Book>> getBooksByAuthor(@PathVariable Integer id) {
-        Iterable<Book> author = authorService.findBooksByAuthor(id);
-        LOGGER.info("Books found!");
-        return new ResponseEntity<>(author, HttpStatus.OK);
+    @GetMapping("/book/{id}")
+    public ResponseEntity<Iterable<Author>> getAuthorsByBook(@PathVariable Integer id) {
+        Iterable<Author> authors = authorService.findAuthorsByBook(id);
+        LOGGER.info("Authors found!");
+        return new ResponseEntity<>(authors, HttpStatus.OK);
     }
 
     @PostMapping("/add")
@@ -53,47 +53,28 @@ public class AuthorController {
         return new ResponseEntity<>(createdAuthor, HttpStatus.CREATED);
     }
 
-    @PostMapping("/{id}/books")
-    public ResponseEntity<Book> addBookToAuthor(@RequestBody Book book, @PathVariable Integer id) {
-        Book addedBook = authorService. addBookToAuthor(id, book);
-        if (addedBook == null) {
-            LOGGER.info("Please, specify book's ISBN");
-            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
-        }
-        LOGGER.info("Book was successfully added!");
-        return new ResponseEntity<>(addedBook, HttpStatus.CREATED);
-    }
-
-    @PutMapping("/{id}")
+    @PutMapping("/put/{id}")
     public ResponseEntity<Author> updateAuthor(@PathVariable Integer id, @RequestBody Author author) {
-        Author updatedAuthor = authorService.updateAuthor(id, author);
-        if (updatedAuthor == null) {
-            LOGGER.info("Author was not found. Maybe try creating a new one?");
-            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        try {
+            Author updatedAuthor = authorService.updateAuthor(id, author);
+            LOGGER.info("Author updated successfully!");
+            return new ResponseEntity<>(updatedAuthor, HttpStatus.OK);
         }
-        LOGGER.info("Library updated successfully!");
-        return new ResponseEntity<>(updatedAuthor, HttpStatus.OK);
+        catch (Exception e) {
+            LOGGER.info(e.getMessage());
+            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+        }
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/delete/{id}")
     public ResponseEntity<Author> deleteAuthor(@PathVariable Integer id) {
-        Author deletedAuthor = authorService.deleteAuthor(id);
-        if (deletedAuthor == null) {
-            LOGGER.info("Author with given ID does not exists, so it can not be deleted");
+        try {
+            Author deletedAuthor = authorService.deleteAuthor(id);
+            LOGGER.info("Author deleted successfully!");
+            return new ResponseEntity<>(deletedAuthor, HttpStatus.OK);
+        } catch (Exception e) {
+            LOGGER.info(e.getMessage());
             return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         }
-        LOGGER.info("Author deleted successfully!");
-        return new ResponseEntity<>(deletedAuthor, HttpStatus.OK);
-    }
-
-    @DeleteMapping("/{id}/books/delete")
-    public ResponseEntity<Book> deleteBookFromAuthor(@PathVariable Integer id, @RequestBody Long isbn) {
-        Book deletedBook = authorService.deleteBookFromAuthor(id, isbn);
-        if (deletedBook == null) {
-            LOGGER.info("Book with given ISBN either is not listed or is not written by author with given id");
-            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
-        }
-        LOGGER.info("Authorship of book by author was successfully deleted!");
-        return new ResponseEntity<>(deletedBook, HttpStatus.OK);
     }
 }

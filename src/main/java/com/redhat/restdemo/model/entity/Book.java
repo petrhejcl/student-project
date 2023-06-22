@@ -22,6 +22,10 @@ import java.sql.Date;
 @NoArgsConstructor
 public class Book {
     private @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(columnDefinition = "SERIAL")
+    Integer id;
+
     @Column(name = "isbn")
     Long isbn;
 
