@@ -3,16 +3,20 @@ package com.redhat.restdemo;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.redhat.restdemo.controllers.AuthorController;
 import com.redhat.restdemo.model.entity.Author;
 import com.redhat.restdemo.model.repository.AuthorRepository;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -21,8 +25,14 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import javax.transaction.Transactional;
+import java.io.IOException;
+import java.sql.*;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Logger;
 
 import static com.redhat.restdemo.utils.utils.countGetResult;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -37,16 +47,12 @@ class AuthorEndpointTests {
 	@Value("http://localhost:${local.server.port}")
 	String baseUrl;
 
-	TestRestTemplate restTemplate = new TestRestTemplate();
-
-	HttpHeaders headers = new HttpHeaders();
-
 	TestRequests testRequests = new TestRequests();
 
 	@Autowired
 	private AuthorRepository authorRepository;
 
-	private static final PostgreSQLContainer postgresqlContainer;
+	private static PostgreSQLContainer postgresqlContainer;
 
 	static {
 		postgresqlContainer = new PostgreSQLContainer("postgres:14")
@@ -56,10 +62,6 @@ class AuthorEndpointTests {
 		postgresqlContainer.start();
 	}
 
-	private String createURLWithPort(String uri) {
-		return baseUrl + uri;
-	}
-
 	@DynamicPropertySource
 	public static void setDatasourceProperties(final DynamicPropertyRegistry registry) {
 		registry.add("spring.datasource.url", postgresqlContainer::getJdbcUrl);
@@ -67,37 +69,47 @@ class AuthorEndpointTests {
 		registry.add("spring.datasource.password", postgresqlContainer::getPassword);
 	}
 
-	@Test
-	@Sql({"/prepare_schema.sql"})
-	void testGeneralEndpoint() throws JsonProcessingException {
-		String authorUrl = createURLWithPort("/author");
+	private String createURLWithPort(String uri) {
+		return baseUrl + uri;
+	}
 
-		ResponseEntity<String> response = testRequests.get(authorUrl);
+	@BeforeEach
+	public void prepareSchema() throws IOException {
+		try (Connection connection = DriverManager.getConnection(
+				postgresqlContainer.getJdbcUrl(),
+				postgresqlContainer.getUsername(),
+				postgresqlContainer.getPassword()
+		)) {
+			try (Statement statement = connection.createStatement()) {
+				statement.executeUpdate("TRUNCATE TABLE author");
+			} catch (SQLException e) {
+				throw new RuntimeException(e);
+			}
+		} catch (SQLException e) {
+			throw new RuntimeException(e);
+		}
 
-		ObjectMapper objectMapper = new ObjectMapper();
-		List<Author> authors = objectMapper.readValue(response.getBody(), new TypeReference<List<Author>>() {
-		});
-		assertThat(authors.size(), is(3));
-		assertThat(authors.get(0).getName(), is("Julius"));
-		assertThat(authors.get(0).getSurname(), is("Ceasar"));
-		assertThat(authors.get(1).getName(), is("John"));
-		assertThat(authors.get(1).getSurname(), is("Rambo"));
-		assertThat(authors.get(2).getName(), is("John"));
-		assertThat(authors.get(2).getSurname(), is("McClain"));
+		String authorAddUrl = createURLWithPort("/author/add");
+
+		LinkedList<Author> authors = new LinkedList<>();
+
+		authors.add(new Author("J.K.", "Rowling", 1965));
+		authors.add(new Author("George", "Orwell", 1903));
+		authors.add(new Author("Jane", "Austen", 1775));
+		authors.add(new Author("Ernest", "Hemingway", 1899));
+		authors.add(new Author("Maya", "Angelou", 1928));
+		authors.add(new Author("Charles", "Bukowski", 1920));
+
+		for (Author author : authors) {
+			ResponseEntity<String> response = testRequests.post(authorAddUrl, author);
+			if (!response.getStatusCode().is2xxSuccessful()) {
+				throw new IOException("Preparing schema was not successful");
+			}
+		}
 	}
 
 	@Test
-	void testPostAuthorEndpoint() throws JsonProcessingException {
-		String postAuthorUrl = createURLWithPort("/author/add");
-
-		Author charles = new Author("Charles", "Bukowski", 1920);
-		Author mark = new Author("Mark", "Twain", 1835);
-		Author frank = new Author("Frank", "Herbert", 1920);
-
-		testRequests.post(postAuthorUrl, charles);
-		testRequests.post(postAuthorUrl, mark);
-		testRequests.post(postAuthorUrl, frank);
-
+	void testGeneralEndpoint() throws IOException {
 		String authorUrl = createURLWithPort("/author");
 
 		ResponseEntity<String> response = testRequests.get(authorUrl);
@@ -107,66 +119,133 @@ class AuthorEndpointTests {
 		List<Author> authors = objectMapper.readValue(response.getBody(), new TypeReference<List<Author>>() {
 		});
 		assertThat(authors.size(), is(6));
-		assertThat(authors.get(3).getName(), is("Charles"));
-		assertThat(authors.get(3).getSurname(), is("Bukowski"));
-		assertThat(authors.get(3).getYearOfBirth(), is(1920));
-		assertThat(authors.get(4).getName(), is("Mark"));
-		assertThat(authors.get(4).getSurname(), is("Twain"));
-		assertThat(authors.get(4).getYearOfBirth(), is(1835));
-		assertThat(authors.get(5).getName(), is("Frank"));
 
-		assertThat(authors.get(5).getSurname(), is("Herbert"));
+		assertThat(authors.get(0).getName(), is("J.K."));
+		assertThat(authors.get(0).getSurname(), is("Rowling"));
+		assertThat(authors.get(0).getYearOfBirth(), is(1965));
+
+		assertThat(authors.get(1).getName(), is("George"));
+		assertThat(authors.get(1).getSurname(), is("Orwell"));
+		assertThat(authors.get(1).getYearOfBirth(), is(1903));
+
+		assertThat(authors.get(2).getName(), is("Jane"));
+		assertThat(authors.get(2).getSurname(), is("Austen"));
+		assertThat(authors.get(2).getYearOfBirth(), is(1775));
+
+		assertThat(authors.get(3).getName(), is("Ernest"));
+		assertThat(authors.get(3).getSurname(), is("Hemingway"));
+		assertThat(authors.get(3).getYearOfBirth(), is(1899));
+
+		assertThat(authors.get(4).getName(), is("Maya"));
+		assertThat(authors.get(4).getSurname(), is("Angelou"));
+		assertThat(authors.get(4).getYearOfBirth(), is(1928));
+
+		assertThat(authors.get(5).getName(), is("Charles"));
+		assertThat(authors.get(5).getSurname(), is("Bukowski"));
 		assertThat(authors.get(5).getYearOfBirth(), is(1920));
+
+		assertThat(authors.get(0).getId(), is(1));
+		assertThat(authors.get(1).getId(), is(2));
+		assertThat(authors.get(2).getId(), is(3));
+		assertThat(authors.get(3).getId(), is(4));
+		assertThat(authors.get(4).getId(), is(5));
+		assertThat(authors.get(5).getId(), is(6));
 	}
 
 	@Test
-	void testDeleteAuthorEndpoint() throws JsonProcessingException {
+	void testPostAuthorEndpoint() throws IOException {
 		String authorUrl = createURLWithPort("/author");
 
-		Iterable<Author> authors = authorRepository.findAll();
+		ResponseEntity<String> response = testRequests.get(authorUrl);
 
-		Long authorsCounter = countGetResult(Collections.singleton(authors));
+		ObjectMapper objectMapper = new ObjectMapper();
+		List<Author> authors = objectMapper.readValue(response.getBody(), new TypeReference<List<Author>>() {
+		});
+		assertThat(authors.size(), is(6));
 
-		testRequests.delete(authorUrl + "/" + 1);
-
-		assertThat(authorsCounter - 1, is(countGetResult(Collections.singleton(authorRepository.findAll()))));
-
-		testRequests.delete(authorUrl + "/" + 2);
-
-		assertThat(authorsCounter - 2, is(countGetResult(Collections.singleton(authorRepository.findAll()))));
-
-		for (Author author : authorRepository.findAll()) {
-			Integer authorId = author.getId();
-			String deleteAuthorUrl = authorUrl + "/" + authorId;
-			testRequests.delete(deleteAuthorUrl);
-		}
-
-		assertThat(countGetResult(Collections.singleton(authorRepository.findAll())), is(0L));
-
+		assertThat(authors.get(0).getId(), is(0));
+		assertThat(authors.get(1).getId(), is(1));
+		assertThat(authors.get(2).getId(), is(2));
+		assertThat(authors.get(3).getId(), is(3));
+		assertThat(authors.get(4).getId(), is(4));
+		assertThat(authors.get(5).getId(), is(5));
 	}
 
 	@Test
-	void testGetAuthorById() throws JsonProcessingException {
+	void testGetAuthorById() throws IOException {
 		String authorUrl = createURLWithPort("/author");
 
 		ObjectMapper objectMapper = new ObjectMapper();
 
-		ResponseEntity<String> ceasarResponse = testRequests.get(authorUrl + "/" + 20);
-		ResponseEntity<String> ramboResponse = testRequests.get(authorUrl + "/" + 50);
-		ResponseEntity<String> mcclainResponse = testRequests.get(authorUrl + "/" + 30);
+		Author rowling = objectMapper.readValue(testRequests.get(authorUrl + "/" + 1).getBody(), new TypeReference<>() {
+		});
+		Author orwell = objectMapper.readValue(testRequests.get(authorUrl + "/" + 2).getBody(), new TypeReference<>() {
+		});
+		Author austen = objectMapper.readValue(testRequests.get(authorUrl + "/" + 3).getBody(), new TypeReference<>() {
+		});
+		Author hemingway = objectMapper.readValue(testRequests.get(authorUrl + "/" + 4).getBody(), new TypeReference<>() {
+		});
+		Author angelou = objectMapper.readValue(testRequests.get(authorUrl + "/" + 5).getBody(), new TypeReference<>() {
+		});
+		Author bukowski = objectMapper.readValue(testRequests.get(authorUrl + "/" + 6).getBody(), new TypeReference<>() {
+		});
 
-		Author ceasar = objectMapper.readValue(ceasarResponse.getBody(), new TypeReference<>() {
-		});
-		Author rambo = objectMapper.readValue(ramboResponse.getBody(), new TypeReference<>() {
-		});
-		Author mcclain = objectMapper.readValue(mcclainResponse.getBody(), new TypeReference<>() {
-		});
+		assertThat(rowling.getId(), is(1));
+		assertThat(rowling.getName(), is("J.K."));
+		assertThat(rowling.getSurname(), is("Rowling"));
+		assertThat(rowling.getYearOfBirth(), is(1965));
 
-		assertThat(ceasar.getName(), is ("Julius"));
-		assertThat(ceasar.getSurname(), is ("Ceasar"));
-		assertThat(rambo.getName(), is ("John"));
-		assertThat(rambo.getSurname(), is ("Rambo"));
-		assertThat(mcclain.getName(), is ("John"));
-		assertThat(mcclain.getSurname(), is ("McClain"));
+		assertThat(orwell.getId(), is(2));
+		assertThat(orwell.getName(), is("George"));
+		assertThat(orwell.getSurname(), is("Orwell"));
+		assertThat(orwell.getYearOfBirth(), is(1903));
+
+		assertThat(austen.getId(), is(3));
+		assertThat(austen.getName(), is("Jane"));
+		assertThat(austen.getSurname(), is("Austen"));
+		assertThat(austen.getYearOfBirth(), is(1775));
+
+		assertThat(hemingway.getId(), is(4));
+		assertThat(hemingway.getName(), is("Ernest"));
+		assertThat(hemingway.getSurname(), is("Hemingway"));
+		assertThat(hemingway.getYearOfBirth(), is(1899));
+
+		assertThat(angelou.getId(), is(5));
+		assertThat(angelou.getName(), is("Maya"));
+		assertThat(angelou.getSurname(), is("Angelou"));
+		assertThat(angelou.getYearOfBirth(), is(1928));
+
+		assertThat(bukowski.getId(), is(6));
+		assertThat(bukowski.getName(), is("Charles"));
+		assertThat(bukowski.getSurname(), is("Bukowski"));
+		assertThat(bukowski.getYearOfBirth(), is(1920));
+	}
+
+	@Test
+	void testDeleteAuthorEndpoint() throws IOException {
+		String authorDeleteUrl = createURLWithPort("/author/delete");
+
+		Iterable<Author> authors = authorRepository.findAll();
+
+		Long authorsCounter = countGetResult(authors);
+
+		testRequests.delete(authorDeleteUrl + "/" + 1);
+		authorsCounter--;
+		assertThat(authorsCounter, is(countGetResult(authorRepository.findAll())));
+
+		testRequests.delete(authorDeleteUrl + "/" + 3);
+		authorsCounter--;
+		assertThat(authorsCounter, is(countGetResult(authorRepository.findAll())));
+
+		for (Author author : authorRepository.findAll()) {
+			Integer authorId = author.getId();
+			String deleteAuthorUrl = authorDeleteUrl + "/" + authorId;
+			testRequests.delete(deleteAuthorUrl);
+			authorsCounter--;
+			assertThat(authorsCounter, is(countGetResult(authorRepository.findAll())));
+		}
+
+		assertThat(countGetResult(authorRepository.findAll()), is(0L));
 	}
 }
+

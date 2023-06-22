@@ -7,9 +7,14 @@ import com.redhat.restdemo.model.repository.AuthorRepository;
 import com.redhat.restdemo.model.repository.AuthorshipRepository;
 import com.redhat.restdemo.model.repository.BookRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import javax.transaction.Transactional;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @Transactional
@@ -18,9 +23,6 @@ public class AuthorServiceImpl implements AuthorService {
 
     @Autowired
     private AuthorRepository authorRepository;
-
-    @Autowired
-    private BookRepository bookRepository;
 
     @Autowired
     private AuthorshipRepository authorshipRepository;
@@ -42,71 +44,41 @@ public class AuthorServiceImpl implements AuthorService {
 
     @Override
     public Author updateAuthor(Integer id, Author author) {
-        try {
-            Author existingAuthor = findAuthorById(id).orElseThrow();
-            String newName = author.getName();
-            if (newName != null) {
-                existingAuthor.setName(newName);
-            }
-            String newSurname = author.getSurname();
-            if (newSurname != null) {
-                existingAuthor.setSurname(newSurname);
-            }
-            Integer newYearOfBirth = author.getYearOfBirth();
-            if (newYearOfBirth != null) {
-                existingAuthor.setYearOfBirth(newYearOfBirth);
-            }
-            return addAuthor(existingAuthor);
-        } catch (Exception e) {
-            return null;
+        Author existingAuthor = findAuthorById(id).orElseThrow();
+
+        if (author.getId() != null) {
+            throw new IllegalArgumentException("You can not change id of author");
         }
+
+        String newName = author.getName();
+        if (newName != null) {
+            existingAuthor.setName(newName);
+        }
+        String newSurname = author.getSurname();
+        if (newSurname != null) {
+            existingAuthor.setSurname(newSurname);
+        }
+        Integer newYearOfBirth = author.getYearOfBirth();
+        if (newYearOfBirth != null) {
+            existingAuthor.setYearOfBirth(newYearOfBirth);
+        }
+        return addAuthor(existingAuthor);
     }
 
     @Override
     public Author deleteAuthor(Integer id) {
-        try {
-            Author author = findAuthorById(id).get();
-            for (Book book : bookRepository.findBooksByAuthor(id)) {
-                Integer authorshipId = authorshipRepository.findAuthorshipId(id, book.getIsbn());
-                authorshipRepository.deleteById(authorshipId);
-            }
-            authorRepository.deleteById(id);
-            return author;
-        } catch (Exception e) {
-            return null;
+        Optional<Author> author = authorRepository.findById(id);
+        if (author.isEmpty()) {
+            throw new NoSuchElementException("Author with given id does not exist, so it can not be deleted");
         }
+        authorshipRepository.deleteAll(authorshipRepository.findAuthorshipFromAuthor(id));
+        authorRepository.deleteById(id);
+        return author.get();
     }
 
     @Override
-    public Iterable<Book> findBooksByAuthor (Integer id) {
-        return bookRepository.findBooksByAuthor(id);
+    public Iterable<Author> findAuthorsByBook(Integer id) {
+        return authorRepository.findAuthorsByBook(id);
     }
 
-    @Override
-    public Book addBookToAuthor(Integer authorId, Book book) {
-        Long isbn = book.getIsbn();
-        if (isbn == null) {
-            return null;
-        }
-        Optional<Book> existingBook = bookRepository.findById(isbn);
-        if (existingBook.isEmpty()) {
-            bookRepository.save(book);
-        }
-        else {
-            book = existingBook.get();
-        }
-        Authorship authorship = new Authorship(isbn, authorId);
-        authorshipRepository.save(authorship);
-        return book;
-    }
-
-    @Override
-    public Book deleteBookFromAuthor(Integer authorId, Long isbn) {
-        Integer authorshipId = authorshipRepository.findAuthorshipId(authorId, isbn);
-        if (authorshipId == null) {
-            return null;
-        }
-        authorshipRepository.deleteById(authorshipId);
-        return bookRepository.findById(isbn).get();
-    }
 }

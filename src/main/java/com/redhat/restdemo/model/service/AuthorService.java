@@ -10,8 +10,6 @@ public interface AuthorService {
     Optional<Author> findAuthorById(Integer id);
     Author addAuthor(Author author);
     Author updateAuthor(Integer id, Author author);
+    Iterable<Author> findAuthorsByBook(Integer id);
     Author deleteAuthor(Integer id);
-    Iterable<Book> findBooksByAuthor (Integer id);
-    Book addBookToAuthor(Integer authorId, Book book);
-    Book deleteBookFromAuthor(Integer authorId, Long isbn);
 }

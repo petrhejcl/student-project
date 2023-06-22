@@ -11,7 +11,7 @@ import org.springframework.web.client.RestTemplate;
 public class TestRequests {
     private final RestTemplate restTemplate = new RestTemplate();
     private final HttpHeaders headers = new HttpHeaders();
-    private void assertStatus(HttpStatus httpStatus) {
+    public void assertStatus(HttpStatus httpStatus) {
         assert (httpStatus.value() >= 200);
         assert (httpStatus.value() < 300);
     }

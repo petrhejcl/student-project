@@ -1,5 +1,6 @@
 package com.redhat.restdemo.controllers;
 
+import com.redhat.restdemo.model.entity.Author;
 import com.redhat.restdemo.model.entity.Book;
 import com.redhat.restdemo.model.service.BookService;
 import org.slf4j.Logger;
@@ -26,7 +27,7 @@ public class BookController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Optional<Book>> getBookById(@PathVariable Long id) {
+    public ResponseEntity<Optional<Book>> getBookById(@PathVariable Integer id) {
         Optional<Book> book = bookService.findBookById(id);
         if (book.isEmpty()) {
             LOGGER.info("Book with given ID does not exists");
@@ -43,6 +44,13 @@ public class BookController {
         return new ResponseEntity<>(books, HttpStatus.OK);
     }
 
+    @GetMapping("/author/{id}")
+    public ResponseEntity<Iterable<Book>> getBooksByAuthor(@PathVariable Integer id) {
+        Iterable<Book> books = bookService.findBooksByAuthor(id);
+        LOGGER.info("Books found!");
+        return new ResponseEntity<>(books, HttpStatus.OK);
+    }
+
     @PostMapping("/add")
     public ResponseEntity<Book> addBook(@RequestBody Book book) {
         Long isbn = book.getIsbn();
@@ -55,19 +63,21 @@ public class BookController {
         return new ResponseEntity<>(createdBook, HttpStatus.CREATED);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Book> updateBook(@PathVariable Long id, @RequestBody Book book) {
-        Book updatedBook = bookService.updateBook(id, book);
-        if (updatedBook == null) {
-            LOGGER.info("book was not found. Maybe try creating a new one?");
-            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+    @PutMapping("/put/{id}")
+    public ResponseEntity<Book> updateBook(@PathVariable Integer id, @RequestBody Book book) {
+        try {
+            Book updatedBook = bookService.updateBook(id, book);
+            LOGGER.info("Library updated successfully!");
+            return new ResponseEntity<>(updatedBook, HttpStatus.OK);
         }
-        LOGGER.info("Library updated successfully!");
-        return new ResponseEntity<>(updatedBook, HttpStatus.OK);
+        catch (Exception e) {
+            LOGGER.info(e.getMessage());
+            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+        }
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Book> deleteBook(@PathVariable Long id) {
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<Book> deleteBook(@PathVariable Integer id) {
         Book deletedBook = bookService.deleteBook(id);
         if (deletedBook == null) {
             LOGGER.info("book with given ID does not exists, so it can not be deleted");

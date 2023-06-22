@@ -24,19 +24,19 @@ public class Authorship{
     @Column(columnDefinition = "SERIAL")
     Integer id;
 
-    @Column(name = "isbn")
-    private Long isbn;
+    @Column(name = "book_id")
+    private Integer bookId;
 
     @Column(name = "author_id")
     private Integer authorId;
 
-    public Authorship(Long isbn, Integer authorId) {
-        this.isbn = isbn;
+    public Authorship(Integer bookId, Integer authorId) {
+        this.bookId = bookId;
         this.authorId = authorId;
     }
 
     public Authorship(Authorship authorship) {
-        isbn = authorship.getIsbn();
+        bookId = authorship.getBookId();
         authorId = authorship.getAuthorId();
     }
 }
