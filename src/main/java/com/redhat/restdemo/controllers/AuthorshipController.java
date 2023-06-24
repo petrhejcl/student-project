@@ -1,5 +1,6 @@
 package com.redhat.restdemo.controllers;
 
+import com.redhat.restdemo.model.entity.Author;
 import com.redhat.restdemo.model.entity.Authorship;
 import com.redhat.restdemo.model.service.AuthorshipService;
 import org.slf4j.Logger;
@@ -17,8 +18,15 @@ public class AuthorshipController {
     @Autowired
     private AuthorshipService authorshipService;
 
+    @GetMapping
+    public ResponseEntity<Iterable<Authorship>> getAllAuthorship() {
+        LOGGER.info("Authorship listed");
+        Iterable<Authorship> authors = authorshipService.findAll();
+        return new ResponseEntity<>(authors, HttpStatus.OK);
+    }
+
     @PostMapping("/add")
-    public ResponseEntity<Authorship> addAuthorShip(@RequestBody Authorship authorship) {
+    public ResponseEntity<Authorship> addAuthorship(@RequestBody Authorship authorship) {
         try {
             Authorship createdAuthorship = authorshipService.add(authorship);
             LOGGER.info("Authorship successfully added!");
@@ -30,7 +38,7 @@ public class AuthorshipController {
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<Authorship> deleteAuthorShip(@PathVariable Integer id) {
+    public ResponseEntity<Authorship> deleteAuthorship(@PathVariable Integer id) {
         try {
             Authorship deletedAuthorship = authorshipService.delete(id);
             LOGGER.info("Authorship successfully deleted!");

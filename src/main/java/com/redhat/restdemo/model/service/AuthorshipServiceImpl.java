@@ -25,9 +25,14 @@ public class AuthorshipServiceImpl implements AuthorshipService {
     BookRepository bookRepository;
 
     @Override
+    public Iterable<Authorship> findAll() {
+        return authorshipRepository.findAll();
+    }
+
+    @Override
     public Authorship add(Authorship authorship) {
         if (authorRepository.findById(authorship.getAuthorId()).isEmpty() ||
-                bookRepository.findById(authorship.getId()).isEmpty()) {
+                bookRepository.findById(authorship.getBookId()).isEmpty()) {
             throw new NoSuchElementException("Author or book does not exit yet");
         }
         authorshipRepository.save(authorship);

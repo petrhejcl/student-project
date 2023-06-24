@@ -19,6 +19,7 @@ import java.sql.Date;
 @Table(name = "book")
 @Getter
 @Setter
+@AllArgsConstructor
 @NoArgsConstructor
 public class Book {
     private @Id
