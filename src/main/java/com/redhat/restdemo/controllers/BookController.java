@@ -1,6 +1,5 @@
 package com.redhat.restdemo.controllers;
 
-import com.redhat.restdemo.model.entity.Author;
 import com.redhat.restdemo.model.entity.Book;
 import com.redhat.restdemo.model.service.BookService;
 import org.slf4j.Logger;
@@ -21,7 +20,7 @@ public class BookController {
 
     @GetMapping
     public ResponseEntity<Iterable<Book>> getAllBooks() {
-        LOGGER.info("Just hit book endpoint!");
+        LOGGER.info("These are all the books!");
         Iterable<Book> books = bookService.findAll();
         return new ResponseEntity<>(books, HttpStatus.OK);
     }
@@ -79,11 +78,12 @@ public class BookController {
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Book> deleteBook(@PathVariable Integer id) {
         Book deletedBook = bookService.deleteBook(id);
-        if (deletedBook == null) {
-            LOGGER.info("book with given ID does not exists, so it can not be deleted");
-            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        try {
+            LOGGER.info("book deleted successfully!");
+            return new ResponseEntity<>(deletedBook, HttpStatus.OK);
+        } catch (Exception e) {
+            LOGGER.info(e.getMessage());
+            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         }
-        LOGGER.info("book deleted successfully!");
-        return new ResponseEntity<>(deletedBook, HttpStatus.OK);
     }
 }
