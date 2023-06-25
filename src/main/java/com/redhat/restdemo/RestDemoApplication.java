@@ -10,7 +10,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class RestDemoApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(RestDemoApplication.class, args);
-
+		/*
 		System.out.println("hello world, I have just started up");
 		Author charles = new Author("Charles", "Bukowski", 1920);
 		Author mark = new Author("Mark", "Twain", 1835);
@@ -35,5 +35,6 @@ public class RestDemoApplication {
 		testRequests.post(url + postBookUri, postOffice);
 
 		System.out.println("hellou");
+		 */
 	}
 }
