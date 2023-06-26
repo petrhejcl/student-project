@@ -11,6 +11,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.util.Objects;
 
 @Entity
 @Table(name = "library")
@@ -53,5 +54,18 @@ public class Library {
         this.street = street;
         this.streetNumber = streetNumber;
         this.description = description;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Library library = (Library) o;
+        return Objects.equals(id, library.id) && Objects.equals(name, library.name) && Objects.equals(city, library.city) && Objects.equals(street, library.street) && Objects.equals(streetNumber, library.streetNumber) && Objects.equals(description, library.description);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, city, street, streetNumber, description);
     }
 }

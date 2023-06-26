@@ -4,13 +4,13 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.restdemo.model.entity.Author;
 import com.redhat.restdemo.model.repository.AuthorRepository;
+import com.redhat.restdemo.utils.TestData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 
 import java.io.IOException;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
@@ -25,25 +25,7 @@ class AuthorEndpointTests extends EndpointTestTemplate {
 
 	@BeforeEach
 	public void prepareAuthorSchema() throws IOException {
-		authorRepository.deleteAll();
-
-		String authorAddUrl = createURLWithPort("/author/add");
-
-		LinkedList<Author> authors = new LinkedList<>();
-
-		authors.add(new Author("J.K.", "Rowling", 1965));
-		authors.add(new Author("George", "Orwell", 1903));
-		authors.add(new Author("Jane", "Austen", 1775));
-		authors.add(new Author("Ernest", "Hemingway", 1899));
-		authors.add(new Author("Maya", "Angelou", 1928));
-		authors.add(new Author("Charles", "Bukowski", 1920));
-
-		for (Author author : authors) {
-			ResponseEntity<String> response = postAndIncrease(authorAddUrl, author);
-			if (!response.getStatusCode().is2xxSuccessful()) {
-				throw new IOException("Preparing schema was not successful");
-			}
-		}
+		prepareSchema(authorRepository, createURLWithPort("/author/add"), TestData.authors);
 	}
 
 	public void prepareBookSchema() throws IOException {
@@ -101,11 +83,12 @@ class AuthorEndpointTests extends EndpointTestTemplate {
 			Integer id = author.getId();
 			Author testAuthor = objectMapper.readValue(testRequests.get(authorUrl + "/" + id).getBody(), new TypeReference<>() {
 			});
-			assertThat(author.getId(), is(testAuthor.getId()));
-			assertThat(author.getName(), is(testAuthor.getName()));
-			assertThat(author.getSurname(), is(testAuthor.getSurname()));
-			assertThat(author.getYearOfBirth(), is(testAuthor.getYearOfBirth()));
+			assertThat(author, is(testAuthor));
 		}
+
+		int nonSenseId = new Random().nextInt(50000) + 100;
+		ResponseEntity<String> nonSenseResponse = testRequests.get(authorUrl + "/" + nonSenseId);
+		assert(nonSenseResponse.getStatusCode().is4xxClientError());
 	}
 
 	@Test
@@ -121,7 +104,7 @@ class AuthorEndpointTests extends EndpointTestTemplate {
 
 		ObjectMapper objectMapper = new ObjectMapper();
 
-		List<Author> authors = objectMapper.readValue(response.getBody(), new TypeReference<List<Author>>() {
+		List<Author> authors = objectMapper.readValue(response.getBody(), new TypeReference<>() {
 		});
 
 		int expectedSize = 6;
