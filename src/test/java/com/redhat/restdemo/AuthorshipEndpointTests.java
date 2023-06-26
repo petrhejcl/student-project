@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 
+import static com.redhat.restdemo.utils.Utils.countGetResult;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
@@ -166,7 +167,30 @@ public class AuthorshipEndpointTests extends EndpointTestTemplate {
 
     @Test
     public void testDeleteAuthorshipEndpoint() throws IOException {
-        //TODO
+        String authorshipDeleteUrl = createURLWithPort("/authorship/delete");
+
+        Iterable<Authorship> authorships = authorshipRepository.findAll();
+
+        Long authorshipCounter = countGetResult(authorships);
+
+        for (int i = 0; i < 5; i++) {
+            int nonSenseId = new Random().nextInt(50000) + 100;
+            ResponseEntity<String> response = testRequests.delete(
+                    authorshipDeleteUrl + "/" + nonSenseId);
+            assert(response.getStatusCode().is4xxClientError());
+            assertThat(countGetResult(authorRepository.findAll()), is(authorshipCounter));
+        }
+
+        for (Authorship authorship : authorships) {
+            Integer authorshipId = authorship.getId();
+            String deleteAuthorUrl = authorshipDeleteUrl + "/" + authorshipId;
+            testRequests.delete(deleteAuthorUrl);
+            authorshipCounter--;
+
+            assertThat(authorshipCounter, is(countGetResult(authorRepository.findAll())));
+            ResponseEntity<String> getResponse = testRequests.get(createURLWithPort("/authorship/" + authorship.getId()));
+            assert(getResponse.getStatusCode().is4xxClientError());
+        }
     }
 
 }
