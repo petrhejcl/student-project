@@ -11,6 +11,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.util.Objects;
 
 /**
  * This is a short example of mapping class that should be completed by all other attributes.
@@ -40,6 +41,19 @@ public class Author {
         name = author.getName();
         surname = author.getSurname();
         yearOfBirth = author.getYearOfBirth();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Author author = (Author) o;
+        return Objects.equals(id, author.id) && Objects.equals(name, author.name) && Objects.equals(surname, author.surname) && Objects.equals(yearOfBirth, author.yearOfBirth);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, surname, yearOfBirth);
     }
 
     public Author(String name, String surname, Integer yearOfBirth) {

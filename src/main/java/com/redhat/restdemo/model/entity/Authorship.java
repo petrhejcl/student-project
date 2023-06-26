@@ -11,6 +11,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.util.Objects;
 
 @Entity
 @Table(name = "authorship")
@@ -29,6 +30,19 @@ public class Authorship{
 
     @Column(name = "author_id")
     private Integer authorId;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Authorship that = (Authorship) o;
+        return Objects.equals(id, that.id) && Objects.equals(bookId, that.bookId) && Objects.equals(authorId, that.authorId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, bookId, authorId);
+    }
 
     public Authorship(Integer bookId, Integer authorId) {
         this.bookId = bookId;

@@ -1,4 +1,4 @@
-package com.redhat.restdemo;
+package com.redhat.restdemo.utils;
 
 import com.redhat.restdemo.model.entity.Author;
 import com.redhat.restdemo.utils.CustomResponseErrorHandler;
