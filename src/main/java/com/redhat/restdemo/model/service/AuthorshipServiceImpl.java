@@ -45,7 +45,7 @@ public class AuthorshipServiceImpl implements AuthorshipService {
         if (authorship.isEmpty()) {
             throw new NoSuchElementException("Authorship with given id does not exist yet");
         }
-        authorshipRepository.delete(authorship.get());
+        authorshipRepository.deleteById(authorship.get().getId());
         return authorship.get();
     }
 }

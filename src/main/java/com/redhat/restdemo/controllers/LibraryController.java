@@ -43,7 +43,7 @@ public class LibraryController {
         return new ResponseEntity<>(createdLibrary, HttpStatus.CREATED);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/put/{id}")
     public ResponseEntity<Library> updateLibrary(@PathVariable Integer id, @RequestBody Library library) {
         Library updatedLibrary = libraryService.updateLibrary(id, library);
         if (updatedLibrary == null) {
@@ -54,7 +54,7 @@ public class LibraryController {
         return new ResponseEntity<>(updatedLibrary, HttpStatus.OK);
     }
 
-    @DeleteMapping("/{id}/delete")
+    @DeleteMapping("/delete/{id}")
     public ResponseEntity<Library> deleteLibrary(@PathVariable Integer id) {
         Library deletedLibrary = libraryService.deleteLibrary(id);
         if (deletedLibrary == null) {

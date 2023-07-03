@@ -32,6 +32,9 @@ public class LibraryServiceImpl implements LibraryService{
     @Override
     public Library updateLibrary(Integer id, Library library) {
         try {
+            if (library.getId() != null) {
+                throw new IllegalArgumentException();
+            }
             Library existingLibrary = findLibraryById(id).orElseThrow();
             String newName = library.getName();
             if (newName != null) {
