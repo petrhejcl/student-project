@@ -10,16 +10,14 @@ import com.redhat.restdemo.model.repository.AuthorRepository;
 import com.redhat.restdemo.model.repository.AuthorshipRepository;
 import com.redhat.restdemo.model.repository.BookRepository;
 import com.redhat.restdemo.utils.TestData;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 
 import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
 
 import static com.redhat.restdemo.utils.Utils.countGetResult;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -35,35 +33,21 @@ public class AuthorshipEndpointTests extends EndpointTestTemplate {
     @Autowired
     private BookRepository bookRepository;
 
-    public void prepareAuthorBookSchemas() throws IOException {
-        prepareSchema(authorRepository, createURLWithPort("/author/add"), TestData.authors);
-        prepareSchema(bookRepository, createURLWithPort("/book/add"), TestData.books);
-
-        LinkedList<Authorship> authorship = new LinkedList<>();
-
-        Iterable<Author> authors = authorRepository.findAll();
-
-        Iterable<Book> books = bookRepository.findAll();
-
-        for (Author author : authors) {
-            String surname = author.getSurname();
-            for (Book book : books) {
-                Long isbn = book.getIsbn();
-                if ((surname.equals("Rowling") && isbn == 9780747532743L) ||
-                        (surname.equals("Orwell") && isbn == 9780451524935L) ||
-                        (surname.equals("Austen") && isbn == 9780141439518L) ||
-                        (surname.equals("Hemingway") && isbn == 9780684801223L) ||
-                        (surname.equals("Angelou") && isbn == 9780345514400L) ||
-                        (surname.equals("Bukowski") && isbn == 9780876857632L)) {
-                    authorship.add(new Authorship(author.getId(), book.getId()));
-                }
-            }
+    public void prepareAuthorBookSchemas() {
+        for (Map.Entry<Author, Book> entry : TestData.authorship.entrySet()) {
+            Integer authorId = authorRepository.save(entry.getKey()).getId();
+            Integer bookId = bookRepository.save(entry.getValue()).getId();
+            authorshipRepository.save(new Authorship(authorId, bookId));
         }
-        prepareSchema(authorshipRepository, createURLWithPort("/authorship/add"), authorship);
+    }
+
+    @AfterEach
+    public void clearRepository() {
+        authorshipRepository.deleteAll();
     }
 
     @Test
-    public void testGetAuthorshipEndpoint() throws IOException {
+    void testGetAuthorshipEndpoint() throws IOException {
         prepareAuthorBookSchemas();
 
         String authorshipUrl = createURLWithPort("/authorship");
@@ -111,7 +95,7 @@ public class AuthorshipEndpointTests extends EndpointTestTemplate {
     }
 
     @Test
-    public void testAddAuthorshipEndpoint() throws JsonProcessingException {
+    void testAddAuthorshipEndpoint() throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
 
         String addAuthorshipUrl = createURLWithPort("/authorship/add");
@@ -166,7 +150,9 @@ public class AuthorshipEndpointTests extends EndpointTestTemplate {
     }
 
     @Test
-    public void testDeleteAuthorshipEndpoint() throws IOException {
+    void testDeleteAuthorshipEndpoint() {
+        prepareAuthorBookSchemas();
+
         String authorshipDeleteUrl = createURLWithPort("/authorship/delete");
 
         Iterable<Authorship> authorships = authorshipRepository.findAll();
@@ -184,10 +170,10 @@ public class AuthorshipEndpointTests extends EndpointTestTemplate {
         for (Authorship authorship : authorships) {
             Integer authorshipId = authorship.getId();
             String deleteAuthorUrl = authorshipDeleteUrl + "/" + authorshipId;
-            testRequests.delete(deleteAuthorUrl);
+            assert(testRequests.delete(deleteAuthorUrl).getStatusCode().is2xxSuccessful());
             authorshipCounter--;
 
-            assertThat(authorshipCounter, is(countGetResult(authorRepository.findAll())));
+            assertThat(authorshipCounter, is(countGetResult(authorshipRepository.findAll())));
             ResponseEntity<String> getResponse = testRequests.get(createURLWithPort("/authorship/" + authorship.getId()));
             assert(getResponse.getStatusCode().is4xxClientError());
         }
