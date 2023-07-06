@@ -16,7 +16,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Random;
 
-import static com.redhat.restdemo.utils.Utils.countGetResult;
+import static com.redhat.restdemo.utils.Utils.countIterable;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
@@ -208,14 +208,14 @@ public class LibraryEndpointTests extends EndpointTestTemplate {
 
         Iterable<Library> libraries = libraryRepository.findAll();
 
-        Long librariesCounter = countGetResult(libraries);
+        Long librariesCounter = countIterable(libraries);
 
         for (int i = 0; i < 5; i++) {
             int nonSenseId = new Random().nextInt(50000) + 100;
             ResponseEntity<String> response = testRequests.delete(
                     libraryDeleteUrl + "/" + nonSenseId);
             assert (response.getStatusCode().is4xxClientError());
-            assertThat(countGetResult(libraryRepository.findAll()), is(librariesCounter));
+            assertThat(countIterable(libraryRepository.findAll()), is(librariesCounter));
         }
 
         for (Library library : libraries) {
@@ -224,7 +224,7 @@ public class LibraryEndpointTests extends EndpointTestTemplate {
             testRequests.delete(deleteLibraryUrl);
             librariesCounter--;
 
-            assertThat(librariesCounter, is(countGetResult(libraryRepository.findAll())));
+            assertThat(librariesCounter, is(countIterable(libraryRepository.findAll())));
             ResponseEntity<String> getResponse = testRequests.get(createURLWithPort("/library/" + library.getId()));
             assert (getResponse.getStatusCode().is4xxClientError());
         }
@@ -233,9 +233,9 @@ public class LibraryEndpointTests extends EndpointTestTemplate {
             ResponseEntity<String> response = testRequests.delete(
                     libraryDeleteUrl + "/" + i);
             assert (response.getStatusCode().is4xxClientError());
-            assertThat(countGetResult(libraryRepository.findAll()), is(librariesCounter));
+            assertThat(countIterable(libraryRepository.findAll()), is(librariesCounter));
         }
 
-        assertThat(countGetResult(libraryRepository.findAll()), is(0L));
+        assertThat(countIterable(libraryRepository.findAll()), is(0L));
     }
 }

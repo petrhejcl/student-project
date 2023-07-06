@@ -19,7 +19,7 @@ import org.springframework.http.ResponseEntity;
 import java.io.IOException;
 import java.util.*;
 
-import static com.redhat.restdemo.utils.Utils.countGetResult;
+import static com.redhat.restdemo.utils.Utils.countIterable;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
@@ -33,7 +33,7 @@ public class AuthorshipEndpointTests extends EndpointTestTemplate {
     @Autowired
     private BookRepository bookRepository;
 
-    public void prepareAuthorBookSchemas() {
+    private void prepareAuthorBookSchemas() {
         for (Map.Entry<Author, Book> entry : TestData.authorship.entrySet()) {
             Integer authorId = authorRepository.save(entry.getKey()).getId();
             Integer bookId = bookRepository.save(entry.getValue()).getId();
@@ -157,14 +157,14 @@ public class AuthorshipEndpointTests extends EndpointTestTemplate {
 
         Iterable<Authorship> authorships = authorshipRepository.findAll();
 
-        Long authorshipCounter = countGetResult(authorships);
+        Long authorshipCounter = countIterable(authorships);
 
         for (int i = 0; i < 5; i++) {
             int nonSenseId = new Random().nextInt(50000) + 100;
             ResponseEntity<String> response = testRequests.delete(
                     authorshipDeleteUrl + "/" + nonSenseId);
             assert(response.getStatusCode().is4xxClientError());
-            assertThat(countGetResult(authorRepository.findAll()), is(authorshipCounter));
+            assertThat(countIterable(authorRepository.findAll()), is(authorshipCounter));
         }
 
         for (Authorship authorship : authorships) {
@@ -173,7 +173,7 @@ public class AuthorshipEndpointTests extends EndpointTestTemplate {
             assert(testRequests.delete(deleteAuthorUrl).getStatusCode().is2xxSuccessful());
             authorshipCounter--;
 
-            assertThat(authorshipCounter, is(countGetResult(authorshipRepository.findAll())));
+            assertThat(authorshipCounter, is(countIterable(authorshipRepository.findAll())));
             ResponseEntity<String> getResponse = testRequests.get(createURLWithPort("/authorship/" + authorship.getId()));
             assert(getResponse.getStatusCode().is4xxClientError());
         }

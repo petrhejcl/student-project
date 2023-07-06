@@ -14,6 +14,10 @@ import javax.transaction.Transactional;
  */
 @Repository
 public interface AuthorRepository extends CrudRepository<Author, Integer> {
-    @Query(value = "SELECT id, name, surname, year_of_birth FROM author NATURAL INNER JOIN book WHERE id = :bookid", nativeQuery = true)
+    @Query(value = "SELECT a.id, a.name, a.surname, a.year_of_birth\n" +
+            "FROM author a\n" +
+            "JOIN authorship auth ON a.id = auth.author_id\n" +
+            "JOIN book b ON b.id = auth.book_id\n" +
+            "WHERE b.id = :bookid", nativeQuery = true)
     Iterable<Author> findAuthorsByBook(@Param("bookid") Integer bookid);
 }
