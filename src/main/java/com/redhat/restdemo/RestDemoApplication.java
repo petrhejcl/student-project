@@ -2,6 +2,7 @@ package com.redhat.restdemo;
 
 import com.redhat.restdemo.model.entity.Author;
 import com.redhat.restdemo.model.entity.Book;
+import com.redhat.restdemo.utils.TestRequests;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -10,8 +11,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class RestDemoApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(RestDemoApplication.class, args);
-		/*
-		System.out.println("hello world, I have just started up");
+
 		Author charles = new Author("Charles", "Bukowski", 1920);
 		Author mark = new Author("Mark", "Twain", 1835);
 		Author frank = new Author("Frank", "Herbert", 1920);
@@ -33,8 +33,5 @@ public class RestDemoApplication {
 
 		testRequests.post(url + postBookUri, dune);
 		testRequests.post(url + postBookUri, postOffice);
-
-		System.out.println("hellou");
-		 */
 	}
 }

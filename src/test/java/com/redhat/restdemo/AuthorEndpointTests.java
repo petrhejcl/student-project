@@ -3,33 +3,65 @@ package com.redhat.restdemo;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.restdemo.model.entity.Author;
+import com.redhat.restdemo.model.entity.Authorship;
+import com.redhat.restdemo.model.entity.Book;
 import com.redhat.restdemo.model.repository.AuthorRepository;
+import com.redhat.restdemo.model.repository.AuthorshipRepository;
+import com.redhat.restdemo.model.repository.BookRepository;
 import com.redhat.restdemo.utils.TestData;
+import com.redhat.restdemo.utils.TestRequests;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 
-import static com.redhat.restdemo.utils.Utils.countGetResult;
+import static com.redhat.restdemo.utils.Utils.countIterable;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-class AuthorEndpointTests extends EndpointTestTemplate {
 
+class AuthorEndpointTests extends EndpointTestTemplate {
 	@Autowired
 	private AuthorRepository authorRepository;
+
+	@Autowired
+	private BookRepository bookRepository;
+
+	@Autowired
+	private AuthorshipRepository authorshipRepository;
 
 	@BeforeEach
 	public void prepareAuthorSchema() throws IOException {
 		prepareSchema(authorRepository, createURLWithPort("/author/add"), TestData.authors);
 	}
 
-	public void prepareBookSchema() throws IOException {
-		//TODO after authorship tests done
+	private void prepareAuthorshipSchema() throws IOException {
+		assertThat(countIterable(bookRepository.findAll()), is(0L));
+		assertThat(countIterable(authorshipRepository.findAll()), is(0L));
+
+		for (Author author : authorRepository.findAll()) {
+			Author referenceAuthor = new Author(author.getName(), author.getSurname(), author.getYearOfBirth());
+			Book book = bookRepository.save(TestData.authorship.get(referenceAuthor));
+			authorshipRepository.save(new Authorship(book.getId(), author.getId()));
+		}
+
+		assertThat(countIterable(authorshipRepository.findAll()), is(6L));
 	}
 
 	@Test
@@ -93,7 +125,38 @@ class AuthorEndpointTests extends EndpointTestTemplate {
 
 	@Test
 	void testGetAuthorsByBookEndpoint() throws IOException {
-		//TODO after authorship tests done
+		prepareAuthorshipSchema();
+
+		String bookUrl = createURLWithPort("/author/book");
+
+		ObjectMapper objectMapper = new ObjectMapper();
+
+		for (Book book : bookRepository.findAll()) {
+			Integer bookId = book.getId();
+			ResponseEntity<String> response = testRequests.get(bookUrl + "/" + bookId);
+			assert(response.getStatusCode().is2xxSuccessful());
+			List<Author> authors = objectMapper.readValue(response.getBody(), new TypeReference<>() {
+			});
+			assertThat(authors.size(), is(1));
+
+			authorshipRepository.save(new Authorship(bookId, idCounter));
+			response = testRequests.get(bookUrl + "/" + bookId);
+			assert(response.getStatusCode().is2xxSuccessful());
+			authors = objectMapper.readValue(response.getBody(), new TypeReference<>() {
+			});
+			assertThat(authors.size(), is(2));
+		}
+
+		authorshipRepository.deleteAll();
+
+		for (Book book : bookRepository.findAll()) {
+			Integer bookId = book.getId();
+			ResponseEntity<String> response = testRequests.get(bookUrl + "/" + bookId);
+			assert(response.getStatusCode().is2xxSuccessful());
+			List<Author> authors = objectMapper.readValue(response.getBody(), new TypeReference<>() {
+			});
+			assertThat(authors.size(), is(0));
+		}
 	}
 
 	@Test
@@ -183,14 +246,14 @@ class AuthorEndpointTests extends EndpointTestTemplate {
 
 		Iterable<Author> authors = authorRepository.findAll();
 
-		Long authorsCounter = countGetResult(authors);
+		Long authorsCounter = countIterable(authors);
 
 		for (int i = 0; i < 5; i++) {
 			int nonSenseId = new Random().nextInt(50000) + 100;
 			ResponseEntity<String> response = testRequests.delete(
 					authorDeleteUrl + "/" + nonSenseId);
 			assert(response.getStatusCode().is4xxClientError());
-			assertThat(countGetResult(authorRepository.findAll()), is(authorsCounter));
+			assertThat(countIterable(authorRepository.findAll()), is(authorsCounter));
 		}
 
 		for (Author author : authors) {
@@ -199,7 +262,7 @@ class AuthorEndpointTests extends EndpointTestTemplate {
 			testRequests.delete(deleteAuthorUrl);
 			authorsCounter--;
 
-			assertThat(authorsCounter, is(countGetResult(authorRepository.findAll())));
+			assertThat(authorsCounter, is(countIterable(authorRepository.findAll())));
 			ResponseEntity<String> getResponse = testRequests.get(createURLWithPort("/author/" + author.getId()));
 			assert(getResponse.getStatusCode().is4xxClientError());
 		}
@@ -208,10 +271,10 @@ class AuthorEndpointTests extends EndpointTestTemplate {
 			ResponseEntity<String> response = testRequests.delete(
 					authorDeleteUrl + "/" + i);
 			assert(response.getStatusCode().is4xxClientError());
-			assertThat(countGetResult(authorRepository.findAll()), is(authorsCounter));
+			assertThat(countIterable(authorRepository.findAll()), is(authorsCounter));
 		}
 
-		assertThat(countGetResult(authorRepository.findAll()), is(0L));
+		assertThat(countIterable(authorRepository.findAll()), is(0L));
 	}
 }
 

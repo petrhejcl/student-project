@@ -3,7 +3,11 @@ package com.redhat.restdemo;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.redhat.restdemo.model.entity.Author;
+import com.redhat.restdemo.model.entity.Authorship;
 import com.redhat.restdemo.model.entity.Book;
+import com.redhat.restdemo.model.repository.AuthorRepository;
+import com.redhat.restdemo.model.repository.AuthorshipRepository;
 import com.redhat.restdemo.model.repository.BookRepository;
 import com.redhat.restdemo.utils.TestData;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,7 +18,7 @@ import org.springframework.http.ResponseEntity;
 import java.io.IOException;
 import java.util.*;
 
-import static com.redhat.restdemo.utils.Utils.countGetResult;
+import static com.redhat.restdemo.utils.Utils.countIterable;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
@@ -22,9 +26,33 @@ class BookEndpointTests extends EndpointTestTemplate {
     @Autowired
     private BookRepository bookRepository;
 
+    @Autowired
+    private AuthorRepository authorRepository;
+
+    @Autowired
+    private AuthorshipRepository authorshipRepository;
+
     @BeforeEach
     public void prepareBookSchema() throws IOException {
         prepareSchema(bookRepository, createURLWithPort("/book/add"), TestData.books);
+    }
+
+    private void prepareAuthorshipSchema() throws IOException {
+        assertThat(countIterable(authorRepository.findAll()), is(0L));
+        assertThat(countIterable(authorshipRepository.findAll()), is(0L));
+
+        for (Book book : bookRepository.findAll()) {
+            Book referenceBook = new Book(book.getIsbn(), book.getName(), book.getYearOfRelease(), book.getGenre());
+            for (Author author : TestData.authorship.keySet()) {
+                if (TestData.authorship.get(author).equals(referenceBook)) {
+                    Author newAuthor = new Author(author.getName(), author.getSurname(), author.getYearOfBirth());
+                    authorRepository.save(newAuthor);
+                    authorshipRepository.save(new Authorship(book.getId(), newAuthor.getId()));
+                    break;
+                }
+            }
+        }
+        assertThat(countIterable(authorshipRepository.findAll()), is(6L));
     }
 
     @Test
@@ -113,7 +141,7 @@ class BookEndpointTests extends EndpointTestTemplate {
         for (String genre : genres.keySet()) {
             Iterable<Book> genreBooks = objectMapper.readValue(testRequests.get(genreUrl + genre).getBody(), new TypeReference<>() {
             });
-            assert(countGetResult(genreBooks) == genres.get(genre).size());
+            assert(countIterable(genreBooks) == genres.get(genre).size());
             for (Book book : genreBooks) {
                 assert(genres.get(genre).contains(book));
             }
@@ -122,7 +150,38 @@ class BookEndpointTests extends EndpointTestTemplate {
 
     @Test
     void testGetBooksByAuthor() throws IOException {
-        //TODO
+        prepareAuthorshipSchema();
+
+        String authorUrl = createURLWithPort("/book/author");
+
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        for (Author author : authorRepository.findAll()) {
+            Integer authorId = author.getId();
+            ResponseEntity<String> response = testRequests.get(authorUrl+ "/" + authorId);
+            assert(response.getStatusCode().is2xxSuccessful());
+            List<Book> books = objectMapper.readValue(response.getBody(), new TypeReference<>() {
+            });
+            assertThat(books.size(), is(1));
+
+            authorshipRepository.save(new Authorship(idCounter, authorId));
+            response = testRequests.get(authorUrl + "/" + authorId);
+            assert(response.getStatusCode().is2xxSuccessful());
+            books = objectMapper.readValue(response.getBody(), new TypeReference<>() {
+            });
+            assertThat(books.size(), is(2));
+        }
+
+        authorshipRepository.deleteAll();
+
+        for (Author author : authorRepository.findAll()) {
+            Integer authorId = author.getId();
+            ResponseEntity<String> response = testRequests.get(authorUrl + "/" + authorId);
+            assert(response.getStatusCode().is2xxSuccessful());
+            List<Book> books = objectMapper.readValue(response.getBody(), new TypeReference<>() {
+            });
+            assertThat(books.size(), is(0));
+        }
     }
 
     @Test
@@ -231,13 +290,13 @@ class BookEndpointTests extends EndpointTestTemplate {
 
         Iterable<Book> books = bookRepository.findAll();
 
-        Long booksCounter = countGetResult(books);
+        Long booksCounter = countIterable(books);
 
         for (int i = 0; i < 5; i++) {
             int nonSenseId = new Random().nextInt();
             ResponseEntity<String> response = testRequests.delete(bookDeleteUrl + "/" + nonSenseId);
             assert (response.getStatusCode().is4xxClientError());
-            assertThat(countGetResult(bookRepository.findAll()), is(booksCounter));
+            assertThat(countIterable(bookRepository.findAll()), is(booksCounter));
         }
 
         for (Book book : books) {
@@ -246,7 +305,7 @@ class BookEndpointTests extends EndpointTestTemplate {
             testRequests.delete(deleteBookUrl);
             booksCounter--;
 
-            assertThat(booksCounter, is(countGetResult(bookRepository.findAll())));
+            assertThat(booksCounter, is(countIterable(bookRepository.findAll())));
             ResponseEntity<String> getResponse = testRequests.get(createURLWithPort("/book/" + book.getId()));
             assert (getResponse.getStatusCode().is4xxClientError());
         }
@@ -254,9 +313,9 @@ class BookEndpointTests extends EndpointTestTemplate {
         for (int i = 0; i <= idCounter; i++) {
             ResponseEntity<String> response = testRequests.delete(bookDeleteUrl + "/" + i);
             assert (response.getStatusCode().is4xxClientError());
-            assertThat(countGetResult(bookRepository.findAll()), is(booksCounter));
+            assertThat(countIterable(bookRepository.findAll()), is(booksCounter));
         }
 
-        assertThat(countGetResult(bookRepository.findAll()), is(0L));
+        assertThat(countIterable(bookRepository.findAll()), is(0L));
     }
 }
