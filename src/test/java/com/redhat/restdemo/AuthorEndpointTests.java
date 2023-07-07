@@ -35,7 +35,6 @@ import static com.redhat.restdemo.utils.Utils.countIterable;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-
 class AuthorEndpointTests extends EndpointTestTemplate {
 	@Autowired
 	private AuthorRepository authorRepository;
