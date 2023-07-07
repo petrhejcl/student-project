@@ -9,8 +9,12 @@ import com.redhat.restdemo.model.repository.LibraryRepository;
 import com.redhat.restdemo.utils.TestData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.io.IOException;
 import java.util.List;
@@ -20,7 +24,7 @@ import static com.redhat.restdemo.utils.Utils.countIterable;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-public class LibraryEndpointTests extends EndpointTestTemplate {
+class LibraryEndpointTests extends EndpointTestTemplate {
     @Autowired
     LibraryRepository libraryRepository;
 
