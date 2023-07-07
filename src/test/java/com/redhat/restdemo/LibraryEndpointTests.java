@@ -100,6 +100,11 @@ public class LibraryEndpointTests extends EndpointTestTemplate {
     }
 
     @Test
+    public void testGetLibrariesByBookEndpoint() {
+        //TODO after endpoint is created
+    }
+
+    @Test
     public void testAddLibraryEndpoint() throws IOException {
         String libraryUrl = createURLWithPort("/library");
 

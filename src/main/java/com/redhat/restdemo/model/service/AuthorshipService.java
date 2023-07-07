@@ -8,6 +8,5 @@ import org.springframework.data.util.Pair;
 public interface AuthorshipService {
     Iterable<Authorship> findAll();
     Authorship add(Authorship authorship);
-
     Authorship delete(Integer id);
 }
