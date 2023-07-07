@@ -23,7 +23,7 @@ import static com.redhat.restdemo.utils.Utils.countIterable;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-public class AuthorshipEndpointTests extends EndpointTestTemplate {
+class AuthorshipEndpointTests extends EndpointTestTemplate {
     @Autowired
     private AuthorshipRepository authorshipRepository;
 
