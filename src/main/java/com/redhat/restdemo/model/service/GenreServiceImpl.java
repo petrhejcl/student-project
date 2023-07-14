@@ -1,10 +1,6 @@
 package com.redhat.restdemo.model.service;
 
-import com.redhat.restdemo.model.entity.Book;
 import com.redhat.restdemo.model.entity.Genre;
-import com.redhat.restdemo.model.entity.Library;
-import com.redhat.restdemo.model.repository.AuthorRepository;
-import com.redhat.restdemo.model.repository.BookRepository;
 import com.redhat.restdemo.model.repository.GenreRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

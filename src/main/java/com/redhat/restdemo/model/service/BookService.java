@@ -2,7 +2,6 @@ package com.redhat.restdemo.model.service;
 
 import com.redhat.restdemo.model.entity.Book;
 
-import java.security.BasicPermission;
 import java.util.Optional;
 
 public interface BookService {
