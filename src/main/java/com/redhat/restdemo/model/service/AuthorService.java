@@ -1,7 +1,6 @@
 package com.redhat.restdemo.model.service;
 
 import com.redhat.restdemo.model.entity.Author;
-import com.redhat.restdemo.model.entity.Book;
 
 import java.util.Optional;
 
