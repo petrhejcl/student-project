@@ -3,7 +3,6 @@ package com.redhat.restdemo;
 import com.redhat.restdemo.model.entity.Author;
 import com.redhat.restdemo.model.entity.Book;
 import com.redhat.restdemo.utils.TestRequests;
-
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 

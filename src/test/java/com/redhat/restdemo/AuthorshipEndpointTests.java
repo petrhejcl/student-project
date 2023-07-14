@@ -11,13 +11,15 @@ import com.redhat.restdemo.model.repository.AuthorshipRepository;
 import com.redhat.restdemo.model.repository.BookRepository;
 import com.redhat.restdemo.utils.TestData;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Random;
 
 import static com.redhat.restdemo.utils.Utils.countIterable;
 import static org.hamcrest.MatcherAssert.assertThat;
