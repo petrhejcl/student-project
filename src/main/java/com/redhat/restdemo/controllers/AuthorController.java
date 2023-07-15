@@ -24,6 +24,7 @@ import java.util.Optional;
 public class AuthorController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthorController.class);
+
     @Autowired
     private AuthorService authorService;
 
@@ -38,7 +39,7 @@ public class AuthorController {
     public ResponseEntity<Optional<Author>> getAuthorById(@PathVariable Integer id) {
         Optional<Author> author = authorService.findAuthorById(id);
         if (author.isEmpty()) {
-            LOGGER.info("Author with given ID does not exists");
+            LOGGER.info("Author not found");
             return new ResponseEntity<>(author, HttpStatus.NOT_FOUND);
         }
         LOGGER.info("Author found!");
