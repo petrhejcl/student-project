@@ -25,7 +25,7 @@ public class OwnershipController {
 
     @GetMapping
     public ResponseEntity<Iterable<Ownership>> getAllOwnerships() {
-        LOGGER.info("Authorship listed");
+        LOGGER.info("Ownerships listed");
         return new ResponseEntity<>(ownershipService.findAll(), HttpStatus.OK);
     }
 
@@ -33,6 +33,7 @@ public class OwnershipController {
     public ResponseEntity<Ownership> addOwnership(@RequestBody Ownership ownership) {
         try {
             ownershipService.add(ownership);
+            LOGGER.info("Ownership added");
             return new ResponseEntity<>(ownership, HttpStatus.CREATED);
         } catch (Exception e) {
             LOGGER.info(e.getMessage());

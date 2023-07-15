@@ -54,7 +54,7 @@ public class LibraryController {
     public ResponseEntity<Library> updateLibrary(@PathVariable Integer id, @RequestBody Library library) {
         Library updatedLibrary = libraryService.updateLibrary(id, library);
         if (updatedLibrary == null) {
-            LOGGER.info("Library was not found. Maybe try creating a new one?");
+            LOGGER.info("Library not found");
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         }
         LOGGER.info("Library updated successfully!");
@@ -65,7 +65,7 @@ public class LibraryController {
     public ResponseEntity<Library> deleteLibrary(@PathVariable Integer id) {
         Library deletedLibrary = libraryService.deleteLibrary(id);
         if (deletedLibrary == null) {
-            LOGGER.info("Library with given ID does not exists, so it can not be deleted");
+            LOGGER.info("Library not found");
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         }
         LOGGER.info("Library deleted successfully!");

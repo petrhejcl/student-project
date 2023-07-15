@@ -1,10 +1,8 @@
 package com.redhat.restdemo.model.service;
 
 import com.redhat.restdemo.model.entity.Book;
-import com.redhat.restdemo.model.entity.Genre;
 import com.redhat.restdemo.model.repository.AuthorshipRepository;
 import com.redhat.restdemo.model.repository.BookRepository;
-import com.redhat.restdemo.model.repository.GenreRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,17 +18,7 @@ public class BookServiceImpl implements BookService{
     private BookRepository bookRepository;
 
     @Autowired
-    private GenreRepository genreRepository;
-
-    @Autowired
     private AuthorshipRepository authorshipRepository;
-
-    private void addNewGenre(Book book) {
-        String genre = book.getGenre();
-        if (genre != null && genreRepository.findById(genre).isEmpty()) {
-            genreRepository.save(new Genre(genre));
-        }
-    }
 
     @Override
     public Iterable<Book> findAll() {
@@ -53,7 +41,6 @@ public class BookServiceImpl implements BookService{
 
     @Override
     public Book addBook(Book book) {
-        addNewGenre(book);
         return bookRepository.save(book);
     }
     @Override
@@ -61,7 +48,7 @@ public class BookServiceImpl implements BookService{
         Book existingBook = findBookById(id).orElseThrow();
 
         if (book.getId() != null) {
-            throw new IllegalArgumentException("You can not change id of book");
+            throw new IllegalArgumentException("Attempt to change id of book");
         }
 
         Long newIsbn = book.getIsbn();
@@ -78,7 +65,6 @@ public class BookServiceImpl implements BookService{
         }
         String newGenre = book.getGenre();
         if (newGenre != null) {
-            addNewGenre(book);
             existingBook.setGenre(newGenre);
         }
         return addBook(existingBook);
@@ -87,7 +73,7 @@ public class BookServiceImpl implements BookService{
     public Book deleteBook(Integer id) {
         Optional<Book> book = bookRepository.findById(id);
         if (book.isEmpty()) {
-            throw new NoSuchElementException("Book with given id does not exist, so it can not be deleted");
+            throw new NoSuchElementException("Book not found");
         }
         authorshipRepository.deleteAll(authorshipRepository.findAuthorshipFromBook(id));
         bookRepository.deleteById(id);

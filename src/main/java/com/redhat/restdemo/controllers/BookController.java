@@ -27,7 +27,7 @@ public class BookController {
 
     @GetMapping
     public ResponseEntity<Iterable<Book>> getAllBooks() {
-        LOGGER.info("These are all the books!");
+        LOGGER.info("Just hit books endpoint!");
         Iterable<Book> books = bookService.findAll();
         return new ResponseEntity<>(books, HttpStatus.OK);
     }
@@ -61,11 +61,11 @@ public class BookController {
     public ResponseEntity<Book> addBook(@RequestBody Book book) {
         Long isbn = book.getIsbn();
         if(isbn == null) {
-            LOGGER.info("Book must have ISBN!");
+            LOGGER.info("Book does not have ISBN!");
             return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         }
         Book createdBook = bookService.addBook(book);
-        LOGGER.info("book successfully added!");
+        LOGGER.info("Book successfully added!");
         return new ResponseEntity<>(createdBook, HttpStatus.CREATED);
     }
 
@@ -73,7 +73,7 @@ public class BookController {
     public ResponseEntity<Book> updateBook(@PathVariable Integer id, @RequestBody Book book) {
         try {
             Book updatedBook = bookService.updateBook(id, book);
-            LOGGER.info("Library updated successfully!");
+            LOGGER.info("Book updated successfully!");
             return new ResponseEntity<>(updatedBook, HttpStatus.OK);
         }
         catch (Exception e) {
@@ -86,7 +86,7 @@ public class BookController {
     public ResponseEntity<Book> deleteBook(@PathVariable Integer id) {
         try {
             Book deletedBook = bookService.deleteBook(id);
-            LOGGER.info("book deleted successfully!");
+            LOGGER.info("Book deleted successfully!");
             return new ResponseEntity<>(deletedBook, HttpStatus.OK);
         } catch (Exception e) {
             LOGGER.info(e.getMessage());
