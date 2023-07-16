@@ -2,23 +2,29 @@ package com.redhat.restdemo;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.restdemo.model.entity.Author;
 import com.redhat.restdemo.model.entity.Authorship;
 import com.redhat.restdemo.model.entity.Book;
+import com.redhat.restdemo.model.entity.Library;
+import com.redhat.restdemo.model.entity.Ownership;
 import com.redhat.restdemo.model.repository.AuthorRepository;
 import com.redhat.restdemo.model.repository.AuthorshipRepository;
 import com.redhat.restdemo.model.repository.BookRepository;
+import com.redhat.restdemo.model.repository.LibraryRepository;
+import com.redhat.restdemo.model.repository.OwnershipRepository;
 import com.redhat.restdemo.utils.TestData;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 
@@ -34,81 +40,80 @@ class BookEndpointTests extends EndpointTestTemplate {
     private AuthorRepository authorRepository;
 
     @Autowired
+    private LibraryRepository libraryRepository;
+
+    @Autowired
     private AuthorshipRepository authorshipRepository;
 
-    @BeforeEach
-    public void prepareBookSchema() throws IOException {
-        prepareSchema(bookRepository, createURLWithPort("/book/add"), TestData.books);
+    @Autowired
+    private OwnershipRepository ownershipRepository;
+
+    public void prepareBookSchema() {
+        bookRepository.saveAll(TestData.books);
+        assertThat(countIterable(bookRepository.findAll()), is((long) TestData.books.size()));
     }
 
-    private void prepareAuthorshipSchema() throws IOException {
-        assertThat(countIterable(authorRepository.findAll()), is(0L));
-        assertThat(countIterable(authorshipRepository.findAll()), is(0L));
-
-        for (Book book : bookRepository.findAll()) {
-            Book referenceBook = new Book(book.getIsbn(), book.getName(), book.getYearOfRelease(), book.getGenre());
-            for (Author author : TestData.authorship.keySet()) {
-                if (TestData.authorship.get(author).equals(referenceBook)) {
-                    Author newAuthor = new Author(author.getName(), author.getSurname(), author.getYearOfBirth());
-                    authorRepository.save(newAuthor);
-                    authorshipRepository.save(new Authorship(book.getId(), newAuthor.getId()));
-                    break;
-                }
-            }
+    private List<Authorship> prepareAuthorshipSchema() {
+        List<Authorship> authorships = new ArrayList<>();
+        for (Map.Entry<Author, Book> entry : TestData.authorship.entrySet()) {
+            Integer authorId = authorRepository.save(entry.getKey()).getId();
+            Integer bookId = bookRepository.save(entry.getValue()).getId();
+            Authorship authorship = new Authorship(bookId, authorId);
+            authorships.add(authorshipRepository.save(authorship));
         }
-        assertThat(countIterable(authorshipRepository.findAll()), is(6L));
+        assertThat(countIterable(authorshipRepository.findAll()), is((long) TestData.authorship.size()));
+        return authorships;
+    }
+
+    private List<Ownership> prepareOwnershipSchema() {
+        List<Ownership> ownerships = new ArrayList<>();
+        for (Map.Entry<Book, Library> entry : TestData.ownership.entrySet()) {
+            Integer bookId = bookRepository.save(entry.getKey()).getId();
+            Integer libraryId = libraryRepository.save(entry.getValue()).getId();
+            Ownership ownership = new Ownership(libraryId, bookId);
+            ownerships.add(ownershipRepository.save(ownership));
+        }
+        assertThat(countIterable(ownershipRepository.findAll()), is((long) TestData.ownership.size()));
+        return ownerships;
+    }
+
+    @AfterEach
+    public void clearRepos() {
+        bookRepository.deleteAll();
+        authorRepository.deleteAll();
+        libraryRepository.deleteAll();
+        authorshipRepository.deleteAll();
+        ownershipRepository.deleteAll();
     }
 
     @Test
-    void testGetAllBooksEndpoint() throws JsonProcessingException {
+    void testGetAllBooksEndpoint() throws IOException {
+        prepareBookSchema();
+
         String bookUrl = createURLWithPort("/book");
 
         ResponseEntity<String> response = testRequests.get(bookUrl);
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        List<Book> books = objectMapper.readValue(response.getBody(), new TypeReference<List<Book>>() {
+        List<Book> books = objectMapper.readValue(response.getBody(), new TypeReference<>() {
         });
-        assertThat(books.size(), is(6));
+        assertThat(books.size(), is(TestData.books.size()));
 
-        assertThat(books.get(0).getIsbn(), is(9780747532743L));
-        assertThat(books.get(0).getName(), is("Harry Potter and the Sorcerer's Stone"));
-        assertThat(books.get(0).getYearOfRelease(), is(1997));
-        assertThat(books.get(0).getGenre(), is("Fantasy"));
-
-        assertThat(books.get(1).getIsbn(), is(9780451524935L));
-        assertThat(books.get(1).getName(), is("Nineteen Eighty-Four"));
-        assertThat(books.get(1).getYearOfRelease(), is(1949));
-        assertThat(books.get(1).getGenre(), is("Dystopian Fiction"));
-
-        assertThat(books.get(2).getIsbn(), is(9780141439518L));
-        assertThat(books.get(2).getName(), is("Pride and Prejudice"));
-        assertThat(books.get(2).getYearOfRelease(), is(1813));
-        assertThat(books.get(2).getGenre(), is("Classic Fiction"));
-
-        assertThat(books.get(3).getIsbn(), is(9780684801223L));
-        assertThat(books.get(3).getName(), is("The Old Man and the Sea"));
-        assertThat(books.get(3).getYearOfRelease(), is(1952));
-        assertThat(books.get(3).getGenre(), is("Fiction"));
-
-        assertThat(books.get(4).getIsbn(), is(9780345514400L));
-        assertThat(books.get(4).getName(), is("I Know Why the Caged Bird Sings"));
-        assertThat(books.get(4).getYearOfRelease(), is(1969));
-        assertThat(books.get(4).getGenre(), is("Autobiography"));
-
-        assertThat(books.get(5).getIsbn(), is(9780876857632L));
-        assertThat(books.get(5).getName(), is("Post Office"));
-        assertThat(books.get(5).getYearOfRelease(), is(1971));
-        assertThat(books.get(5).getGenre(), is("Fiction"));
+        for (int i = 0; i < TestData.books.size(); i++) {
+            assertThat(books.get(i).getIsbn(), is(TestData.books.get(i).getIsbn()));
+            assertThat(books.get(i).getName(), is(TestData.books.get(i).getName()));
+            assertThat(books.get(i).getYearOfRelease(), is(TestData.books.get(i).getYearOfRelease()));
+            assertThat(books.get(i).getGenre(), is(TestData.books.get(i).getGenre()));
+        }
     }
 
     @Test
     void testGetBookById() throws IOException {
+        prepareBookSchema();
+
         String bookUrl = createURLWithPort("/book");
 
-        ObjectMapper objectMapper = new ObjectMapper();
-
         ResponseEntity<String> response = testRequests.get(bookUrl);
-        List<Book> books = objectMapper.readValue(response.getBody(), new TypeReference<List<Book>>() {
+        List<Book> books = objectMapper.readValue(response.getBody(), new TypeReference<>() {
         });
 
         for (Book book : books) {
@@ -125,9 +130,9 @@ class BookEndpointTests extends EndpointTestTemplate {
 
     @Test
     void testGetBooksByGenre() throws IOException {
-        HashMap<String, HashSet<Book>> genres = new HashMap<>();
+        prepareBookSchema();
 
-        ObjectMapper objectMapper = new ObjectMapper();
+        HashMap<String, HashSet<Book>> genres = new HashMap<>();
 
         Iterable<Book> books = bookRepository.findAll();
 
@@ -158,8 +163,6 @@ class BookEndpointTests extends EndpointTestTemplate {
 
         String authorUrl = createURLWithPort("/book/author");
 
-        ObjectMapper objectMapper = new ObjectMapper();
-
         for (Author author : authorRepository.findAll()) {
             Integer authorId = author.getId();
             ResponseEntity<String> response = testRequests.get(authorUrl+ "/" + authorId);
@@ -189,31 +192,62 @@ class BookEndpointTests extends EndpointTestTemplate {
     }
 
     @Test
+    void testGetBooksByLibrary() throws JsonProcessingException {
+        List<Ownership> ownerships = prepareOwnershipSchema();
+
+        String booksByLibraryurl = createURLWithPort("/book/library");
+
+        for (Ownership ownership : ownerships) {
+            Integer libraryId = ownership.getLibraryId();
+            ResponseEntity<String> response = testRequests.get(booksByLibraryurl + "/" + libraryId);
+            assertThat(response.getStatusCode().is2xxSuccessful(), is(true));
+            List<Book> books = objectMapper.readValue(response.getBody(), new TypeReference<>() {
+            });
+            int booksSize = books.size();
+            assertThat(books.stream()
+                    .anyMatch(book -> Objects.equals(book.getId(), ownership.getBookId())), is(true));
+
+            Book newBook = bookRepository.save(new Book(new Random().nextInt(50000) + 100L, "Testing title", 1990, "Sci-Fi"));
+            ownershipRepository.save(new Ownership(libraryId, newBook.getId()));
+            response = testRequests.get(booksByLibraryurl + "/" + libraryId);
+            assertThat(response.getStatusCode().is2xxSuccessful(), is(true));
+            books = objectMapper.readValue(response.getBody(), new TypeReference<>() {
+            });
+            assertThat(books.size(), is(booksSize + 1));
+            assertThat(books.stream()
+                    .anyMatch(book -> Objects.equals(book.getId(), ownership.getBookId())), is(true));
+        }
+    }
+
+    @Test
     void testAddBookEndpoint() throws IOException {
-        String bookUrl = createURLWithPort("/book");
+        String addBookUrl = createURLWithPort("/book/add");
 
-        ResponseEntity<String> response = testRequests.get(bookUrl);
+        long size = countIterable(bookRepository.findAll());
 
-        ObjectMapper objectMapper = new ObjectMapper();
+        for (Book book : TestData.books) {
+            ResponseEntity<String> response = testRequests.post(addBookUrl, book);
+            assertThat(response.getStatusCode().is2xxSuccessful(), is(true));
+            long expectedSize = size + 1;
+            assertThat(countIterable(bookRepository.findAll()), is(expectedSize));
+            size = expectedSize;
 
-        List<Book> books = objectMapper.readValue(response.getBody(), new TypeReference<List<Book>>() {
-        });
+            Book newBook = objectMapper.readValue(response.getBody(), new TypeReference<>() {
+            });
+            assertThat(bookRepository.findById(newBook.getId()).get(), is(newBook));
 
-        int expectedSize = 6;
-
-        assertThat(books.size(), is(expectedSize));
-
-        for (Book book : books) {
-            expectedSize--;
-            assertThat(book.getId(), is(idCounter - expectedSize));
+            assertThat(newBook.getName(), is(book.getName()));
+            assertThat(newBook.getIsbn(), is(book.getIsbn()));
+            assertThat(newBook.getGenre(), is(book.getGenre()));
+            assertThat(newBook.getYearOfRelease(), is(book.getYearOfRelease()));
         }
     }
 
     @Test
     void testUpdateBookEndpoint() throws IOException {
-        String bookUpdateUrl = createURLWithPort("/book/put");
+        prepareBookSchema();
 
-        ObjectMapper objectMapper = new ObjectMapper();
+        String bookUpdateUrl = createURLWithPort("/book/put");
 
         for (Book book : bookRepository.findAll()) {
             String newName = "New Book Title";
@@ -290,6 +324,8 @@ class BookEndpointTests extends EndpointTestTemplate {
 
     @Test
     void testDeleteBookEndpoint() throws IOException {
+        prepareBookSchema();
+
         String bookDeleteUrl = createURLWithPort("/book/delete");
 
         Iterable<Book> books = bookRepository.findAll();
