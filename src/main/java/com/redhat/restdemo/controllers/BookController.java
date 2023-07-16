@@ -57,6 +57,13 @@ public class BookController {
         return new ResponseEntity<>(books, HttpStatus.OK);
     }
 
+    @GetMapping("/library/{id}")
+    public ResponseEntity<Iterable<Book>> getBooksByLibrary(@PathVariable Integer id) {
+        Iterable<Book> books = bookService.findBooksByLibrary(id);
+        LOGGER.info("Books found!");
+        return new ResponseEntity<>(books, HttpStatus.OK);
+    }
+
     @PostMapping("/add")
     public ResponseEntity<Book> addBook(@RequestBody Book book) {
         Long isbn = book.getIsbn();

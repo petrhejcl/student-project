@@ -1,5 +1,6 @@
 package com.redhat.restdemo;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.restdemo.utils.TestRequests;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,7 +27,9 @@ class EndpointTestTemplate {
 
     static int idCounter = 0;
 
-    TestRequests testRequests = new TestRequests();
+    protected TestRequests testRequests = new TestRequests();
+
+    protected ObjectMapper objectMapper = new ObjectMapper();
 
     @Container
     private static PostgreSQLContainer postgresqlContainer;

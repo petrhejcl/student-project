@@ -40,6 +40,11 @@ public class BookServiceImpl implements BookService{
     }
 
     @Override
+    public Iterable<Book> findBooksByLibrary(Integer id) {
+        return bookRepository.findBooksByLibrary(id);
+    }
+
+    @Override
     public Book addBook(Book book) {
         return bookRepository.save(book);
     }
