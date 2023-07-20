@@ -28,7 +28,7 @@ import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 
-import static com.redhat.restdemo.utils.Utils.countIterable;
+import static com.redhat.restdemo.utils.TestUtils.countIterable;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
@@ -323,7 +323,7 @@ class BookEndpointTests extends EndpointTestTemplate {
     }
 
     @Test
-    void testDeleteBookEndpoint() throws IOException {
+    void testDeleteBookEndpoint() {
         prepareBookSchema();
 
         String bookDeleteUrl = createURLWithPort("/book/delete");

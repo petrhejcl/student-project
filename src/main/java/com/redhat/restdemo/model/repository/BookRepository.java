@@ -9,8 +9,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface BookRepository extends CrudRepository<Book, Integer> {
-    @Query(value = "SELECT * FROM book WHERE genre = :genre", nativeQuery = true)
-    Iterable<Book> findBooksByGenre(@Param("genre") String genreName);
+    Iterable<Book> findBooksByGenre(String genre);
 
     @Query(value = "SELECT b.id, b.isbn, b.name, b.year_of_release, b.genre FROM book b JOIN authorship auth ON b.id = auth.author_id JOIN author a ON a.id = auth.author_id WHERE author_id = :authorId", nativeQuery = true)
     Iterable<Book> findBooksByAuthor(@Param("authorId") Integer authorId);

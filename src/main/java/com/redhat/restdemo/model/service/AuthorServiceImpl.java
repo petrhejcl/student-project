@@ -64,7 +64,7 @@ public class AuthorServiceImpl implements AuthorService {
         if (author.isEmpty()) {
             throw new NoSuchElementException("Author with given id does not exist, so it can not be deleted");
         }
-        authorshipRepository.deleteAll(authorshipRepository.findAuthorshipFromAuthor(id));
+        authorshipRepository.deleteAll(authorshipRepository.findAuthorshipsByAuthorId(id));
         authorRepository.deleteById(id);
         return author.get();
     }
