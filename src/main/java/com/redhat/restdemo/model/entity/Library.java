@@ -61,11 +61,11 @@ public class Library {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Library library = (Library) o;
-        return Objects.equals(id, library.id) && Objects.equals(name, library.name) && Objects.equals(city, library.city) && Objects.equals(street, library.street) && Objects.equals(streetNumber, library.streetNumber) && Objects.equals(description, library.description);
+        return Objects.equals(name, library.name) && Objects.equals(city, library.city) && Objects.equals(street, library.street) && Objects.equals(streetNumber, library.streetNumber) && Objects.equals(description, library.description);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, city, street, streetNumber, description);
+        return Objects.hash(name, city, street, streetNumber, description);
     }
 }
