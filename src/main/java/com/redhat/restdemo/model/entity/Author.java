@@ -43,17 +43,20 @@ public class Author {
         yearOfBirth = author.getYearOfBirth();
     }
 
+    /*
+     * Two objects are considered equal if all their attributes (except ids) are the same
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Author author = (Author) o;
-        return Objects.equals(id, author.id) && Objects.equals(name, author.name) && Objects.equals(surname, author.surname) && Objects.equals(yearOfBirth, author.yearOfBirth);
+        return Objects.equals(name, author.name) && Objects.equals(surname, author.surname) && Objects.equals(yearOfBirth, author.yearOfBirth);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, surname, yearOfBirth);
+        return Objects.hash(name, surname, yearOfBirth);
     }
 
     public Author(String name, String surname, Integer yearOfBirth) {

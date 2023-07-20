@@ -41,12 +41,12 @@ public class Ownership{
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Ownership ownership = (Ownership) o;
-        return Objects.equals(id, ownership.id) && Objects.equals(libraryId, ownership.libraryId) && Objects.equals(bookId, ownership.bookId);
+        return Objects.equals(libraryId, ownership.libraryId) && Objects.equals(bookId, ownership.bookId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, libraryId, bookId);
+        return Objects.hash(libraryId, bookId);
     }
 
     public Ownership(Integer libraryId, Integer bookId) {

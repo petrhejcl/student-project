@@ -31,17 +31,20 @@ public class Authorship{
     @Column(name = "author_id")
     private Integer authorId;
 
+    /*
+     * Two objects are considered equal if all their attributes (except ids) are the same
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Authorship that = (Authorship) o;
-        return Objects.equals(id, that.id) && Objects.equals(bookId, that.bookId) && Objects.equals(authorId, that.authorId);
+        return Objects.equals(bookId, that.bookId) && Objects.equals(authorId, that.authorId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, bookId, authorId);
+        return Objects.hash(bookId, authorId);
     }
 
     public Authorship(Integer bookId, Integer authorId) {
