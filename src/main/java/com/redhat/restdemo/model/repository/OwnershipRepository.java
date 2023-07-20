@@ -6,4 +6,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface OwnershipRepository extends CrudRepository<Ownership, Integer> {
+    Iterable<Ownership> findOwnershipByBookId(Integer bookId);
+
+    Iterable<Ownership> findOwnershipByLibraryId(Integer libraryId);
 }

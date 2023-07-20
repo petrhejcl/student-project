@@ -80,7 +80,7 @@ public class BookServiceImpl implements BookService{
         if (book.isEmpty()) {
             throw new NoSuchElementException("Book not found");
         }
-        authorshipRepository.deleteAll(authorshipRepository.findAuthorshipFromBook(id));
+        authorshipRepository.deleteAll(authorshipRepository.findAuthorshipsByBookId(id));
         bookRepository.deleteById(id);
         return book.get();
     }

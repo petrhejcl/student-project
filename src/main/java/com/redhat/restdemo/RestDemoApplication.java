@@ -2,11 +2,8 @@ package com.redhat.restdemo;
 
 import com.redhat.restdemo.model.entity.*;
 import com.redhat.restdemo.model.repository.*;
-import com.redhat.restdemo.utils.TestRequests;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.web.reactive.filter.OrderedWebFilter;
 import org.springframework.context.ApplicationContext;
 
 @SpringBootApplication
@@ -47,24 +44,5 @@ public class RestDemoApplication {
 		ownershipRepository.save(new Ownership(brno.getId(), dune.getId()));
 		ownershipRepository.save(new Ownership(praha.getId(), postOffice.getId()));
 
-		/*
-		String url = "http://localhost:8080";
-		String author = "/author";
-		String books = "/book";
-		String library = "/library";
-		String postAuthorUri = author + "/add";
-		String postBookUri = books + "/add";
-		String postLibrary = library + "/add";
-
-
-		TestRequests testRequests = new TestRequests();
-
-		testRequests.post(url + postAuthorUri, frank);
-		testRequests.post(url + postAuthorUri, mark);
-		testRequests.post(url + postAuthorUri, charles);
-
-		testRequests.post(url + postBookUri, dune);
-		testRequests.post(url + postBookUri, postOffice);
-		*/
 	}
 }
