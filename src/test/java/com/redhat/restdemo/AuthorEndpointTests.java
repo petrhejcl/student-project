@@ -37,7 +37,7 @@ class AuthorEndpointTests extends EndpointTestTemplate {
 		prepareSchema(authorRepository, createURLWithPort("/author/add"), TestData.authors);
 	}
 
-	private void prepareAuthorshipSchema() throws IOException {
+	private void prepareAuthorshipSchema() {
 		assertThat(countIterable(bookRepository.findAll()), is(0L));
 		assertThat(countIterable(authorshipRepository.findAll()), is(0L));
 
@@ -58,9 +58,13 @@ class AuthorEndpointTests extends EndpointTestTemplate {
 
 		ObjectMapper objectMapper = new ObjectMapper();
 
-		List<Author> authors = objectMapper.readValue(response.getBody(), new TypeReference<List<Author>>() {
+		List<Author> authors = objectMapper.readValue(response.getBody(), new TypeReference<>() {
 		});
-		assertThat(authors.size(), is(6));
+		assertThat(authors.size(), is(TestData.authors.size()));
+
+		for (Author author : TestData.authors) {
+
+		}
 
 		assertThat(authors.get(0).getName(), is("J.K."));
 		assertThat(authors.get(0).getSurname(), is("Rowling"));
