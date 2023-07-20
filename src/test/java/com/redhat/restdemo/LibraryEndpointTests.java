@@ -19,7 +19,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Random;
 
-import static com.redhat.restdemo.utils.Utils.countIterable;
+import static com.redhat.restdemo.utils.TestUtils.countIterable;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
