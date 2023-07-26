@@ -3,6 +3,7 @@ package com.redhat.restdemo.model.service;
 import com.redhat.restdemo.model.entity.Book;
 import com.redhat.restdemo.model.repository.AuthorshipRepository;
 import com.redhat.restdemo.model.repository.BookRepository;
+import com.redhat.restdemo.model.repository.OwnershipRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +20,9 @@ public class BookServiceImpl implements BookService{
 
     @Autowired
     private AuthorshipRepository authorshipRepository;
+
+    @Autowired
+    private OwnershipRepository ownershipRepository;
 
     @Override
     public Iterable<Book> findAll() {
@@ -81,6 +85,7 @@ public class BookServiceImpl implements BookService{
             throw new NoSuchElementException("Book not found");
         }
         authorshipRepository.deleteAll(authorshipRepository.findAuthorshipsByBookId(id));
+        ownershipRepository.deleteAll(ownershipRepository.findOwnershipsByBookId(id));
         bookRepository.deleteById(id);
         return book.get();
     }
