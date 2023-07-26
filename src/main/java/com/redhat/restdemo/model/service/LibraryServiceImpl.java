@@ -2,6 +2,7 @@ package com.redhat.restdemo.model.service;
 
 import com.redhat.restdemo.model.entity.Library;
 import com.redhat.restdemo.model.repository.LibraryRepository;
+import com.redhat.restdemo.model.repository.OwnershipRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +14,9 @@ import java.util.Optional;
 public class LibraryServiceImpl implements LibraryService{
     @Autowired
     private LibraryRepository libraryRepository;
+
+    @Autowired
+    private OwnershipRepository ownershipRepository;
 
     @Override
     public Iterable<Library> findAll() {
@@ -67,6 +71,7 @@ public class LibraryServiceImpl implements LibraryService{
         try {
             Library library = findLibraryById(id).get();
             libraryRepository.deleteById(id);
+            ownershipRepository.deleteAll(ownershipRepository.findOwnershipsByLibraryId(id));
             return library;
         } catch (Exception e) {
             return null;

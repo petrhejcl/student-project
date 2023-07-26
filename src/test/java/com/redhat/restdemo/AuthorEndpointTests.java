@@ -1,5 +1,6 @@
 package com.redhat.restdemo;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.restdemo.model.entity.Author;
@@ -9,13 +10,16 @@ import com.redhat.restdemo.model.repository.AuthorRepository;
 import com.redhat.restdemo.model.repository.AuthorshipRepository;
 import com.redhat.restdemo.model.repository.BookRepository;
 import com.redhat.restdemo.utils.TestData;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import static com.redhat.restdemo.utils.TestUtils.countIterable;
@@ -32,117 +36,102 @@ class AuthorEndpointTests extends EndpointTestTemplate {
 	@Autowired
 	private AuthorshipRepository authorshipRepository;
 
-	@BeforeEach
-	public void prepareAuthorSchema() throws IOException {
-		prepareSchema(authorRepository, createURLWithPort("/author/add"), TestData.authors);
+	public void prepareAuthorSchema() {
+		authorRepository.saveAll(TestData.authors);
+		assertThat(countIterable(authorRepository.findAll()), is((long) TestData.authors.size()));
 	}
 
-	private void prepareAuthorshipSchema() {
-		assertThat(countIterable(bookRepository.findAll()), is(0L));
-		assertThat(countIterable(authorshipRepository.findAll()), is(0L));
-
-		for (Author author : authorRepository.findAll()) {
-			Author referenceAuthor = new Author(author.getName(), author.getSurname(), author.getYearOfBirth());
-			Book book = bookRepository.save(TestData.authorship.get(referenceAuthor));
-			authorshipRepository.save(new Authorship(book.getId(), author.getId()));
+	private List<Authorship> prepareAuthorshipSchema() {
+		List<Authorship> authorships = new ArrayList<>();
+		for (Map.Entry<Author, Book> entry : TestData.authorship.entrySet()) {
+			Integer authorId = authorRepository.save(entry.getKey()).getId();
+			Integer bookId = bookRepository.save(entry.getValue()).getId();
+			Authorship authorship = new Authorship(bookId, authorId);
+			authorships.add(authorshipRepository.save(authorship));
 		}
+		assertThat(countIterable(authorshipRepository.findAll()), is((long) TestData.authorship.size()));
+		return authorships;
+	}
 
-		assertThat(countIterable(authorshipRepository.findAll()), is(6L));
+	@AfterEach
+	void clearRepos() {
+		authorRepository.deleteAll();
+		bookRepository.deleteAll();
+		authorRepository.deleteAll();
 	}
 
 	@Test
 	void testGetAllAuthorsEndpoint() throws IOException {
+		prepareAuthorSchema();
+
 		String authorUrl = createURLWithPort("/author");
 
 		ResponseEntity<String> response = testRequests.get(authorUrl);
 
-		ObjectMapper objectMapper = new ObjectMapper();
+		assertThat(response.getStatusCode().is2xxSuccessful(), is(true));
 
 		List<Author> authors = objectMapper.readValue(response.getBody(), new TypeReference<>() {
 		});
+
 		assertThat(authors.size(), is(TestData.authors.size()));
 
 		for (Author author : TestData.authors) {
-
+			assertThat(authors.contains(author), is(true));
 		}
-
-		assertThat(authors.get(0).getName(), is("J.K."));
-		assertThat(authors.get(0).getSurname(), is("Rowling"));
-		assertThat(authors.get(0).getYearOfBirth(), is(1965));
-
-		assertThat(authors.get(1).getName(), is("George"));
-		assertThat(authors.get(1).getSurname(), is("Orwell"));
-		assertThat(authors.get(1).getYearOfBirth(), is(1903));
-
-		assertThat(authors.get(2).getName(), is("Jane"));
-		assertThat(authors.get(2).getSurname(), is("Austen"));
-		assertThat(authors.get(2).getYearOfBirth(), is(1775));
-
-		assertThat(authors.get(3).getName(), is("Ernest"));
-		assertThat(authors.get(3).getSurname(), is("Hemingway"));
-		assertThat(authors.get(3).getYearOfBirth(), is(1899));
-
-		assertThat(authors.get(4).getName(), is("Maya"));
-		assertThat(authors.get(4).getSurname(), is("Angelou"));
-		assertThat(authors.get(4).getYearOfBirth(), is(1928));
-
-		assertThat(authors.get(5).getName(), is("Charles"));
-		assertThat(authors.get(5).getSurname(), is("Bukowski"));
-		assertThat(authors.get(5).getYearOfBirth(), is(1920));
 	}
 
 	@Test
 	void testGetAuthorById() throws IOException {
-		String authorUrl = createURLWithPort("/author");
+		prepareAuthorSchema();
 
-		ObjectMapper objectMapper = new ObjectMapper();
+		String authorUrl = createURLWithPort("/author/");
 
-		ResponseEntity<String> response = testRequests.get(authorUrl);
-		List<Author> authors = objectMapper.readValue(response.getBody(), new TypeReference<List<Author>>() {
-		});
-
-		for (Author author : authors) {
+		for (Author author : authorRepository.findAll()) {
 			Integer id = author.getId();
-			Author testAuthor = objectMapper.readValue(testRequests.get(authorUrl + "/" + id).getBody(), new TypeReference<>() {
+			ResponseEntity<String> response = testRequests.get(authorUrl + id);
+			assertThat(response.getStatusCode().is2xxSuccessful(), is(true));
+			Author testAuthor = objectMapper.readValue(response.getBody(), new TypeReference<>() {
 			});
 			assertThat(author, is(testAuthor));
 		}
 
 		int nonSenseId = new Random().nextInt(50000) + 100;
 		ResponseEntity<String> nonSenseResponse = testRequests.get(authorUrl + "/" + nonSenseId);
-		assert(nonSenseResponse.getStatusCode().is4xxClientError());
+		assertThat(nonSenseResponse.getStatusCode().is4xxClientError(), is(true));
 	}
 
 	@Test
 	void testGetAuthorsByBookEndpoint() throws IOException {
-		prepareAuthorshipSchema();
+		List<Authorship> authorships = prepareAuthorshipSchema();
 
-		String bookUrl = createURLWithPort("/author/book");
+		String bookUrl = createURLWithPort("/author/book/");
 
-		ObjectMapper objectMapper = new ObjectMapper();
-
-		for (Book book : bookRepository.findAll()) {
-			Integer bookId = book.getId();
-			ResponseEntity<String> response = testRequests.get(bookUrl + "/" + bookId);
-			assert(response.getStatusCode().is2xxSuccessful());
+		for (Authorship authorship : authorships) {
+			Integer bookId = authorship.getBookId();
+			Integer authorId = authorship.getAuthorId();
+			ResponseEntity<String> response = testRequests.get(bookUrl + bookId);
+			assertThat(response.getStatusCode().is2xxSuccessful(), is(true));
 			List<Author> authors = objectMapper.readValue(response.getBody(), new TypeReference<>() {
 			});
-			assertThat(authors.size(), is(1));
+			int authorsCount = authors.size();
+			assertThat(authors.contains(authorRepository.findById(authorId).get()), is(true));
 
-			authorshipRepository.save(new Authorship(bookId, idCounter));
-			response = testRequests.get(bookUrl + "/" + bookId);
-			assert(response.getStatusCode().is2xxSuccessful());
+			Author testAuthor = authorRepository.save(new Author("Test", "Author", 1900));
+			authorshipRepository.save(new Authorship(bookId, testAuthor.getId()));
+			response = testRequests.get(bookUrl + bookId);
+			assertThat(response.getStatusCode().is2xxSuccessful(), is(true));
 			authors = objectMapper.readValue(response.getBody(), new TypeReference<>() {
 			});
-			assertThat(authors.size(), is(2));
+			assertThat(authors.size(), is(authorsCount + 1));
+			assertThat(authors.contains(testAuthor), is(true));
 		}
 
 		authorshipRepository.deleteAll();
 
 		for (Book book : bookRepository.findAll()) {
 			Integer bookId = book.getId();
-			ResponseEntity<String> response = testRequests.get(bookUrl + "/" + bookId);
-			assert(response.getStatusCode().is2xxSuccessful());
+			ResponseEntity<String> response = testRequests.get(bookUrl + bookId);
+			assertThat(response.getStatusCode().is2xxSuccessful(), is(true));
 			List<Author> authors = objectMapper.readValue(response.getBody(), new TypeReference<>() {
 			});
 			assertThat(authors.size(), is(0));
@@ -151,27 +140,71 @@ class AuthorEndpointTests extends EndpointTestTemplate {
 
 	@Test
 	void testAddAuthorEndpoint() throws IOException {
-		String authorUrl = createURLWithPort("/author");
+		String addAuthorUrl = createURLWithPort("/author/add");
 
-		ResponseEntity<String> response = testRequests.get(authorUrl);
+		long authorCount = countIterable(authorRepository.findAll());
 
-		ObjectMapper objectMapper = new ObjectMapper();
+		for (Author author : TestData.authors) {
+			ResponseEntity<String> response = testRequests.post(addAuthorUrl, author);
+			assertThat(response.getStatusCode().is2xxSuccessful(), is(true));
+			Author newAuthor = objectMapper.readValue(response.getBody(), new TypeReference<>() {
+			});
+			assertThat(authorRepository.findById(newAuthor.getId()).get(), is(author));
+			assertThat(countIterable(authorRepository.findAll()), is(authorCount + 1));
+			authorCount++;
+		}
+	}
 
-		List<Author> authors = objectMapper.readValue(response.getBody(), new TypeReference<>() {
-		});
+	@Test
+	void testUpdateAuthorName() {
+		prepareAuthorSchema();
 
-		int expectedSize = 6;
+		String authorPutUrl = createURLWithPort("/author/put/");
 
-		assertThat(authors.size(), is(expectedSize));
+		for (Author author : authorRepository.findAll()) {
+			String newName = "Josef";
+			testRequests.put(authorPutUrl + author.getId(), new Author(newName, null, null));
+			Author updatedAuthor = authorRepository.findById(author.getId()).get();
+			Author referenceAuthor = new Author(newName, author.getSurname(), author.getYearOfBirth());
+			assertThat(referenceAuthor, is(updatedAuthor));
+		}
+	}
 
-		for (Author author : authors) {
-			expectedSize--;
-			assertThat(author.getId(), is(idCounter - expectedSize));
+	@Test
+	void testUpdateAuthorSurname() {
+		prepareAuthorSchema();
+
+		String authorPutUrl = createURLWithPort("/author/put/");
+
+		for (Author author : authorRepository.findAll()) {
+			String newSurname = "Novak";
+			testRequests.put(authorPutUrl + author.getId(), new Author(null, newSurname, null));
+			Author updatedAuthor = authorRepository.findById(author.getId()).get();
+			Author referenceAuthor = new Author(author.getName(), newSurname, author.getYearOfBirth());
+			assertThat(referenceAuthor, is(updatedAuthor));
+		}
+	}
+
+
+	@Test
+	void testUpdateAuthorYearOfBirth() {
+		prepareAuthorSchema();
+
+		String authorPutUrl = createURLWithPort("/author/put/");
+
+		for (Author author : authorRepository.findAll()) {
+			Integer newYearOfBirth = 1900;
+			testRequests.put(authorPutUrl + author.getId(), new Author(null, null, newYearOfBirth));
+			Author updatedAuthor = authorRepository.findById(author.getId()).get();
+			Author referenceAuthor = new Author(author.getName(), author.getSurname(), newYearOfBirth);
+			assertThat(referenceAuthor, is(updatedAuthor));
 		}
 	}
 
 	@Test
 	void testUpdateAuthorEndpoint() throws IOException {
+		prepareAuthorSchema();
+
 		String authorDeleteUrl = createURLWithPort("/author/put");
 
 		ObjectMapper objectMapper = new ObjectMapper();
@@ -231,7 +264,9 @@ class AuthorEndpointTests extends EndpointTestTemplate {
 	}
 
 	@Test
-	void testDeleteAuthorEndpoint() throws IOException {
+	void testDeleteAuthorEndpoint() {
+		prepareAuthorSchema();
+
 		String authorDeleteUrl = createURLWithPort("/author/delete");
 
 		Iterable<Author> authors = authorRepository.findAll();
