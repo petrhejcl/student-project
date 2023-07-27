@@ -1,5 +1,6 @@
 package com.redhat.restdemo.controllers;
 
+import com.redhat.restdemo.model.entity.Authorship;
 import com.redhat.restdemo.model.entity.Ownership;
 import com.redhat.restdemo.model.service.OwnershipService;
 import org.slf4j.Logger;
@@ -26,19 +27,19 @@ public class OwnershipController {
     @GetMapping
     public ResponseEntity<Iterable<Ownership>> getAllOwnerships() {
         LOGGER.info("Ownerships listed");
-        return new ResponseEntity<>(ownershipService.findAll(), HttpStatus.OK);
+        Iterable<Ownership> ownerships = ownershipService.findAll();
+        return new ResponseEntity<>(ownerships, HttpStatus.OK);
     }
 
     @PostMapping("/add")
     public ResponseEntity<Ownership> addOwnership(@RequestBody Ownership ownership) {
-        try {
-            ownershipService.add(ownership);
-            LOGGER.info("Ownership added");
-            return new ResponseEntity<>(ownership, HttpStatus.CREATED);
-        } catch (Exception e) {
-            LOGGER.info(e.getMessage());
+        Ownership createdOwnership = ownershipService.add(ownership);
+        if (createdOwnership == null) {
+            LOGGER.info("Try to create Ownership with invalid or empty book or library id");
             return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         }
+        LOGGER.info("Ownership successfully added!");
+        return new ResponseEntity<>(createdOwnership, HttpStatus.CREATED);
     }
 
     @DeleteMapping("/delete/{id}")

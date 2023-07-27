@@ -20,13 +20,13 @@ import java.util.Objects;
 @Getter
 @Setter
 @AllArgsConstructor
-@NoArgsConstructor(force = true)
+@NoArgsConstructor
 public class Book {
     private @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(columnDefinition = "SERIAL")
     Integer id;
-    
+
     @Column(name = "isbn")
     Long isbn;
 

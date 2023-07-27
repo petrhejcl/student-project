@@ -30,7 +30,7 @@ public class AuthorController {
 
     @GetMapping
     public ResponseEntity<Iterable<Author>> getAllAuthors() {
-        LOGGER.info("Just hit author endpoint!");
+        LOGGER.info("Authors listed");
         Iterable<Author> authors = authorService.findAll();
         return new ResponseEntity<>(authors, HttpStatus.OK);
     }
@@ -39,17 +39,17 @@ public class AuthorController {
     public ResponseEntity<Optional<Author>> getAuthorById(@PathVariable Integer id) {
         Optional<Author> author = authorService.findAuthorById(id);
         if (author.isEmpty()) {
-            LOGGER.info("Author not found");
+            LOGGER.info("Author with id " + id + " not found");
             return new ResponseEntity<>(author, HttpStatus.NOT_FOUND);
         }
-        LOGGER.info("Author found!");
+        LOGGER.info("Author with id " + id + " found");
         return new ResponseEntity<>(author, HttpStatus.OK);
     }
 
     @GetMapping("/book/{id}")
     public ResponseEntity<Iterable<Author>> getAuthorsByBook(@PathVariable Integer id) {
         Iterable<Author> authors = authorService.findAuthorsByBook(id);
-        LOGGER.info("Authors found!");
+        LOGGER.info("Authors of book with id " + id + " listed!");
         return new ResponseEntity<>(authors, HttpStatus.OK);
     }
 
