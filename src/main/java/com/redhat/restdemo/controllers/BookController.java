@@ -27,7 +27,7 @@ public class BookController {
 
     @GetMapping
     public ResponseEntity<Iterable<Book>> getAllBooks() {
-        LOGGER.info("Just hit books endpoint!");
+        LOGGER.info("All books listed");
         Iterable<Book> books = bookService.findAll();
         return new ResponseEntity<>(books, HttpStatus.OK);
     }
@@ -36,41 +36,36 @@ public class BookController {
     public ResponseEntity<Optional<Book>> getBookById(@PathVariable Integer id) {
         Optional<Book> book = bookService.findBookById(id);
         if (book.isEmpty()) {
-            LOGGER.info("Book with given ID does not exists");
+            LOGGER.info("Book with id " + id + " not found");
             return new ResponseEntity<>(book, HttpStatus.NOT_FOUND);
         }
-        LOGGER.info("Book found!");
+        LOGGER.info("Book with id " + id + " found");
         return new ResponseEntity<>(book, HttpStatus.OK);
     }
 
     @GetMapping("/genre/{genre}")
     public ResponseEntity<Iterable<Book>> getBooksByGenre(@PathVariable String genre) {
         Iterable<Book> books = bookService.findBooksByGenre(genre);
-        LOGGER.info("Books found!");
+        LOGGER.info("Books with genre " + genre + " listed");
         return new ResponseEntity<>(books, HttpStatus.OK);
     }
 
     @GetMapping("/author/{id}")
     public ResponseEntity<Iterable<Book>> getBooksByAuthor(@PathVariable Integer id) {
         Iterable<Book> books = bookService.findBooksByAuthor(id);
-        LOGGER.info("Books found!");
+        LOGGER.info("Books by author with id " + id + " listed");
         return new ResponseEntity<>(books, HttpStatus.OK);
     }
 
     @GetMapping("/library/{id}")
     public ResponseEntity<Iterable<Book>> getBooksByLibrary(@PathVariable Integer id) {
         Iterable<Book> books = bookService.findBooksByLibrary(id);
-        LOGGER.info("Books found!");
+        LOGGER.info("Books in library with id " + id + " listed");
         return new ResponseEntity<>(books, HttpStatus.OK);
     }
 
     @PostMapping("/add")
     public ResponseEntity<Book> addBook(@RequestBody Book book) {
-        Long isbn = book.getIsbn();
-        if(isbn == null) {
-            LOGGER.info("Book does not have ISBN!");
-            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
-        }
         Book createdBook = bookService.addBook(book);
         LOGGER.info("Book successfully added!");
         return new ResponseEntity<>(createdBook, HttpStatus.CREATED);

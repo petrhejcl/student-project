@@ -31,12 +31,12 @@ public class AuthorshipServiceImpl implements AuthorshipService {
 
     @Override
     public Authorship add(Authorship authorship) {
-        if (authorRepository.findById(authorship.getAuthorId()).isEmpty() ||
-                bookRepository.findById(authorship.getBookId()).isEmpty()) {
-            throw new NoSuchElementException("Author or book does not exit yet");
+        if (authorship.getBookId() == null || authorship.getAuthorId() == null ||
+                !authorRepository.existsById(authorship.getAuthorId()) ||
+                !bookRepository.existsById(authorship.getBookId())) {
+            return null;
         }
-        authorshipRepository.save(authorship);
-        return authorship;
+        return authorshipRepository.save(authorship);
     }
 
     @Override
