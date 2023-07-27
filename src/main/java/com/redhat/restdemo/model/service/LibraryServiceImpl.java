@@ -28,6 +28,8 @@ public class LibraryServiceImpl implements LibraryService{
         return libraryRepository.findById(id);
     }
 
+    //TODO: findLibrariesByBook
+
     @Override
     public Library addLibrary(Library library) {
         return libraryRepository.save(library);

@@ -27,7 +27,7 @@ public class LibraryController {
 
     @GetMapping
     public ResponseEntity<Iterable<Library>> getAllLibraries() {
-        LOGGER.info("Just hit library endpoint!");
+        LOGGER.info("All libraries listed");
         Iterable<Library> library = libraryService.findAll();
         return new ResponseEntity<>(library, HttpStatus.OK);
     }
@@ -36,12 +36,14 @@ public class LibraryController {
     public ResponseEntity<Optional<Library>> getLibraryById(@PathVariable Integer id) {
         Optional<Library> library = libraryService.findLibraryById(id);
         if (library.isEmpty()) {
-            LOGGER.info("Library with given ID does not exists");
+            LOGGER.info("Library with id " + id + " found");
             return new ResponseEntity<>(library, HttpStatus.NOT_FOUND);
         }
-        LOGGER.info("Library found!");
+        LOGGER.info("Library with id " + id + " not found");
         return new ResponseEntity<>(library, HttpStatus.OK);
     }
+
+    //TODO: getLibrariesByBookId
 
     @PostMapping("/add")
     public ResponseEntity<Library> addLibrary(@RequestBody Library library) {

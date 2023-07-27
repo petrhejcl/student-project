@@ -20,6 +20,11 @@ public class AuthorServiceImpl implements AuthorService {
     @Autowired
     private AuthorshipRepository authorshipRepository;
 
+    public AuthorServiceImpl(AuthorRepository authorRepository, AuthorshipRepository authorshipRepository) {
+        this.authorRepository = authorRepository;
+        this.authorshipRepository = authorshipRepository;
+    }
+
     @Override
     public Iterable<Author> findAll() {
         return authorRepository.findAll();
@@ -28,6 +33,11 @@ public class AuthorServiceImpl implements AuthorService {
     @Override
     public Optional<Author> findAuthorById(Integer id) {
         return authorRepository.findById(id);
+    }
+
+    @Override
+    public Iterable<Author> findAuthorsByBook(Integer id) {
+        return authorRepository.findAuthorsByBook(id);
     }
 
     @Override
@@ -67,11 +77,6 @@ public class AuthorServiceImpl implements AuthorService {
         authorshipRepository.deleteAll(authorshipRepository.findAuthorshipsByAuthorId(id));
         authorRepository.deleteById(id);
         return author.get();
-    }
-
-    @Override
-    public Iterable<Author> findAuthorsByBook(Integer id) {
-        return authorRepository.findAuthorsByBook(id);
     }
 
 }

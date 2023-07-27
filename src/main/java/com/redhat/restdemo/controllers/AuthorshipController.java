@@ -25,21 +25,20 @@ public class AuthorshipController {
 
     @GetMapping
     public ResponseEntity<Iterable<Authorship>> getAllAuthorship() {
-        LOGGER.info("Authorship listed");
+        LOGGER.info("Authorships listed");
         Iterable<Authorship> authors = authorshipService.findAll();
         return new ResponseEntity<>(authors, HttpStatus.OK);
     }
 
     @PostMapping("/add")
     public ResponseEntity<Authorship> addAuthorship(@RequestBody Authorship authorship) {
-        try {
-            Authorship createdAuthorship = authorshipService.add(authorship);
-            LOGGER.info("Authorship successfully added!");
-            return new ResponseEntity<>(createdAuthorship, HttpStatus.CREATED);
-        } catch (Exception e) {
-            LOGGER.info(e.getLocalizedMessage());
+        Authorship createdAuthorship = authorshipService.add(authorship);
+        if (createdAuthorship == null) {
+            LOGGER.info("Try to create authorship with invalid or empty book or author id");
             return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         }
+        LOGGER.info("Authorship successfully added!");
+        return new ResponseEntity<>(createdAuthorship, HttpStatus.CREATED);
     }
 
     @DeleteMapping("/delete/{id}")

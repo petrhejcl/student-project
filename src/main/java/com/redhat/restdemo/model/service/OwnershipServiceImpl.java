@@ -33,7 +33,7 @@ public class OwnershipServiceImpl implements OwnershipService {
         if (ownership.getBookId() == null || ownership.getLibraryId() == null ||
                 !bookRepository.existsById(ownership.getBookId()) ||
                 !libraryRepository.existsById(ownership.getLibraryId())) {
-            throw new IllegalArgumentException();
+            return null;
         }
         return ownershipRepository.save(ownership);
     }
