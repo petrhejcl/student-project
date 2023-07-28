@@ -62,26 +62,23 @@ public class AuthorController {
 
     @PutMapping("/put/{id}")
     public ResponseEntity<Author> updateAuthor(@PathVariable Integer id, @RequestBody Author author) {
-        try {
-            Author updatedAuthor = authorService.updateAuthor(id, author);
-            LOGGER.info("Author updated successfully!");
-            return new ResponseEntity<>(updatedAuthor, HttpStatus.OK);
-        }
-        catch (Exception e) {
-            LOGGER.info(e.getMessage());
+        Author updatedAuthor = authorService.updateAuthor(id, author);
+        if (updatedAuthor == null) {
+            LOGGER.info("Attempt to update invalid author");
             return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         }
+        LOGGER.info("Author updated successfully!");
+        return new ResponseEntity<>(updatedAuthor, HttpStatus.ACCEPTED);
     }
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Author> deleteAuthor(@PathVariable Integer id) {
-        try {
-            Author deletedAuthor = authorService.deleteAuthor(id);
-            LOGGER.info("Author deleted successfully!");
-            return new ResponseEntity<>(deletedAuthor, HttpStatus.OK);
-        } catch (Exception e) {
-            LOGGER.info(e.getMessage());
+        Author deletedAuthor = authorService.deleteAuthor(id);
+        if (deletedAuthor == null) {
+            LOGGER.info("Attempt to delete invalid author");
             return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         }
+        LOGGER.info("Author deleted successfully!");
+        return new ResponseEntity<>(deletedAuthor, HttpStatus.ACCEPTED);
     }
 }
