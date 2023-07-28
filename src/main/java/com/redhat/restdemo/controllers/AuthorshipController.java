@@ -43,13 +43,12 @@ public class AuthorshipController {
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Authorship> deleteAuthorship(@PathVariable Integer id) {
-        try {
-            Authorship deletedAuthorship = authorshipService.delete(id);
-            LOGGER.info("Authorship successfully deleted!");
-            return new ResponseEntity<>(deletedAuthorship, HttpStatus.ACCEPTED);
-        } catch (Exception e) {
-            LOGGER.info(e.getMessage());
+        Authorship deletedAuthorship = authorshipService.delete(id);
+        if (deletedAuthorship == null) {
+            LOGGER.info("Attempt to delete invalid authorship");
             return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         }
+        LOGGER.info("Authorship successfully deleted!");
+        return new ResponseEntity<>(deletedAuthorship, HttpStatus.OK);
     }
 }

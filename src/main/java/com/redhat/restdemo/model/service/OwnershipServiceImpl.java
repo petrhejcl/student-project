@@ -40,11 +40,11 @@ public class OwnershipServiceImpl implements OwnershipService {
 
     @Override
     public Ownership delete(Integer id) {
-        if (!ownershipRepository.existsById(id)) {
-            throw new NoSuchElementException();
-        }
         Optional<Ownership> ownership = ownershipRepository.findById(id);
-        ownershipRepository.deleteById(id);
+        if (ownership.isEmpty()) {
+            return null;
+        }
+        ownershipRepository.delete(ownership.get());
         return ownership.get();
     }
 }

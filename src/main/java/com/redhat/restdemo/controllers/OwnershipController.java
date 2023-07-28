@@ -44,12 +44,12 @@ public class OwnershipController {
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Ownership> deleteOwnership(@PathVariable Integer id) {
-        try {
-            Ownership ownership = ownershipService.delete(id);
-            LOGGER.info("Ownership deleted successfully");
-            return new ResponseEntity<>(ownership, HttpStatus.OK);
-        } catch(Exception e) {
-            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        Ownership deletedOwnership = ownershipService.delete(id);
+        if (deletedOwnership == null) {
+            LOGGER.info("Attempt to delete invalid ownership");
+            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         }
+        LOGGER.info("Ownership deleted successfully");
+        return new ResponseEntity<>(deletedOwnership, HttpStatus.OK);
     }
 }
