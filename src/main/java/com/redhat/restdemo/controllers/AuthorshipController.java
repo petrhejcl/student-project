@@ -34,7 +34,7 @@ public class AuthorshipController {
     public ResponseEntity<Authorship> addAuthorship(@RequestBody Authorship authorship) {
         Authorship createdAuthorship = authorshipService.add(authorship);
         if (createdAuthorship == null) {
-            LOGGER.info("Try to create authorship with invalid or empty book or author id");
+            LOGGER.info("Attempt to create authorship with invalid or empty book or author id");
             return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         }
         LOGGER.info("Authorship successfully added!");
