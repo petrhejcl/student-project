@@ -37,46 +37,43 @@ public class LibraryServiceImpl implements LibraryService{
 
     @Override
     public Library updateLibrary(Integer id, Library library) {
-        try {
-            if (library.getId() != null) {
-                throw new IllegalArgumentException();
-            }
-            Library existingLibrary = findLibraryById(id).orElseThrow();
-            String newName = library.getName();
-            if (newName != null) {
-                existingLibrary.setName(newName);
-            }
-            String newCity = library.getCity();
-            if (newCity != null) {
-                existingLibrary.setCity(newCity);
-            }
-            String newStreet = library.getStreet();
-            if (newStreet != null) {
-                existingLibrary.setStreet(newStreet);
-            }
-            Integer newStreetNumber = library.getStreetNumber();
-            if (newStreetNumber != null) {
-                existingLibrary.setStreetNumber(newStreetNumber);
-            }
-            String newDescription = library.getDescription();
-            if (newDescription != null) {
-                existingLibrary.setDescription(newDescription);
-            }
-            return addLibrary(existingLibrary);
-        } catch (Exception e) {
+        Optional<Library> existingLibrary = findLibraryById(id);
+        if (existingLibrary.isEmpty()) {
             return null;
         }
+        Library updatedLibrary = existingLibrary.get();
+        String newName = library.getName();
+        if (newName != null) {
+            updatedLibrary.setName(newName);
+        }
+        String newCity = library.getCity();
+        if (newCity != null) {
+            updatedLibrary.setCity(newCity);
+        }
+        String newStreet = library.getStreet();
+        if (newStreet != null) {
+            updatedLibrary.setStreet(newStreet);
+        }
+        Integer newStreetNumber = library.getStreetNumber();
+        if (newStreetNumber != null) {
+            updatedLibrary.setStreetNumber(newStreetNumber);
+        }
+        String newDescription = library.getDescription();
+        if (newDescription != null) {
+            updatedLibrary.setDescription(newDescription);
+        }
+        return addLibrary(updatedLibrary);
+        
     }
 
     @Override
     public Library deleteLibrary(Integer id) {
-        try {
-            Library library = findLibraryById(id).get();
-            libraryRepository.deleteById(id);
-            ownershipRepository.deleteAll(ownershipRepository.findOwnershipsByLibraryId(id));
-            return library;
-        } catch (Exception e) {
+        Optional<Library> library = libraryRepository.findById(id);
+        if (library.isEmpty()) {
             return null;
         }
+        ownershipRepository.deleteAll(ownershipRepository.findOwnershipsByLibraryId(id));
+        libraryRepository.deleteById(id);
+        return library.get();
     }
 }

@@ -73,26 +73,23 @@ public class BookController {
 
     @PutMapping("/put/{id}")
     public ResponseEntity<Book> updateBook(@PathVariable Integer id, @RequestBody Book book) {
-        try {
-            Book updatedBook = bookService.updateBook(id, book);
-            LOGGER.info("Book updated successfully!");
-            return new ResponseEntity<>(updatedBook, HttpStatus.OK);
-        }
-        catch (Exception e) {
-            LOGGER.info(e.getMessage());
+        Book updatedBook = bookService.updateBook(id, book);
+        if (updatedBook == null) {
+            LOGGER.info("Attempt to update invalid book");
             return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         }
+        LOGGER.info("Book updated successfully!");
+        return new ResponseEntity<>(updatedBook, HttpStatus.ACCEPTED);
     }
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Book> deleteBook(@PathVariable Integer id) {
-        try {
-            Book deletedBook = bookService.deleteBook(id);
-            LOGGER.info("Book deleted successfully!");
-            return new ResponseEntity<>(deletedBook, HttpStatus.OK);
-        } catch (Exception e) {
-            LOGGER.info(e.getMessage());
+        Book deletedBook = bookService.deleteBook(id);
+        if (deletedBook == null) {
+            LOGGER.info("Attempt to delete invalid book");
             return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         }
+        LOGGER.info("Book deleted successfully!");
+        return new ResponseEntity<>(deletedBook, HttpStatus.ACCEPTED);
     }
 }

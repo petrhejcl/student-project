@@ -20,11 +20,6 @@ public class AuthorServiceImpl implements AuthorService {
     @Autowired
     private AuthorshipRepository authorshipRepository;
 
-    public AuthorServiceImpl(AuthorRepository authorRepository, AuthorshipRepository authorshipRepository) {
-        this.authorRepository = authorRepository;
-        this.authorshipRepository = authorshipRepository;
-    }
-
     @Override
     public Iterable<Author> findAll() {
         return authorRepository.findAll();
@@ -47,32 +42,31 @@ public class AuthorServiceImpl implements AuthorService {
 
     @Override
     public Author updateAuthor(Integer id, Author author) {
-        Author existingAuthor = findAuthorById(id).orElseThrow();
-
-        if (author.getId() != null) {
-            throw new IllegalArgumentException("You can not change id of author");
+        Optional<Author> existingAuthor = findAuthorById(id);
+        if (existingAuthor.isEmpty()) {
+            return null;
         }
-
+        Author updatedAuthor= existingAuthor.get();
         String newName = author.getName();
         if (newName != null) {
-            existingAuthor.setName(newName);
+            updatedAuthor.setName(newName);
         }
         String newSurname = author.getSurname();
         if (newSurname != null) {
-            existingAuthor.setSurname(newSurname);
+            updatedAuthor.setSurname(newSurname);
         }
         Integer newYearOfBirth = author.getYearOfBirth();
         if (newYearOfBirth != null) {
-            existingAuthor.setYearOfBirth(newYearOfBirth);
+            updatedAuthor.setYearOfBirth(newYearOfBirth);
         }
-        return addAuthor(existingAuthor);
+        return addAuthor(updatedAuthor);
     }
 
     @Override
     public Author deleteAuthor(Integer id) {
         Optional<Author> author = authorRepository.findById(id);
         if (author.isEmpty()) {
-            throw new NoSuchElementException("Author with given id does not exist, so it can not be deleted");
+            return null;
         }
         authorshipRepository.deleteAll(authorshipRepository.findAuthorshipsByAuthorId(id));
         authorRepository.deleteById(id);

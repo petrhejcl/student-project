@@ -7,6 +7,7 @@ import com.redhat.restdemo.model.repository.OwnershipRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.swing.text.html.Option;
 import javax.transaction.Transactional;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -54,35 +55,34 @@ public class BookServiceImpl implements BookService{
     }
     @Override
     public Book updateBook(Integer id, Book book) {
-        Book existingBook = findBookById(id).orElseThrow();
-
-        if (book.getId() != null) {
-            throw new IllegalArgumentException("Attempt to change id of book");
+        Optional<Book> existingBook = findBookById(id);
+        if (existingBook.isEmpty()) {
+            return null;
         }
-
+        Book updatedBook = existingBook.get();
         Long newIsbn = book.getIsbn();
         if (newIsbn != null) {
-            existingBook.setIsbn(newIsbn);
+            updatedBook.setIsbn(newIsbn);
         }
         String newName = book.getName();
         if (newName != null) {
-            existingBook.setName(newName);
+            updatedBook.setName(newName);
         }
         Integer newYearOfRelease = book.getYearOfRelease();
         if (newYearOfRelease != null) {
-            existingBook.setYearOfRelease(newYearOfRelease);
+            updatedBook.setYearOfRelease(newYearOfRelease);
         }
         String newGenre = book.getGenre();
         if (newGenre != null) {
-            existingBook.setGenre(newGenre);
+            updatedBook.setGenre(newGenre);
         }
-        return addBook(existingBook);
+        return addBook(updatedBook);
     }
     @Override
     public Book deleteBook(Integer id) {
         Optional<Book> book = bookRepository.findById(id);
         if (book.isEmpty()) {
-            throw new NoSuchElementException("Book not found");
+            return null;
         }
         authorshipRepository.deleteAll(authorshipRepository.findAuthorshipsByBookId(id));
         ownershipRepository.deleteAll(ownershipRepository.findOwnershipsByBookId(id));
