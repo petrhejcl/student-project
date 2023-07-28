@@ -35,7 +35,7 @@ public class OwnershipController {
     public ResponseEntity<Ownership> addOwnership(@RequestBody Ownership ownership) {
         Ownership createdOwnership = ownershipService.add(ownership);
         if (createdOwnership == null) {
-            LOGGER.info("Try to create Ownership with invalid or empty book or library id");
+            LOGGER.info("Attempt to create Ownership with invalid or empty book or library id");
             return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         }
         LOGGER.info("Ownership successfully added!");
