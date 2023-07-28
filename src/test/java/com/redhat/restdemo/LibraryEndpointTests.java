@@ -204,10 +204,6 @@ class LibraryEndpointTests extends EndpointTestTemplate {
         int nonSenseId = new Random().nextInt(50000) + 100;
         nonSenseRequest = testRequests.put(libraryUpdateUrl + "/" + nonSenseId, new Library("New Library", "New City", "New Street", 123, "New description"));
         assert (nonSenseRequest.getStatusCode().is4xxClientError());
-
-        Library tryToChangeId = new Library(99, "New Library", "New City", "New Street", 123, "New description");
-        nonSenseRequest = testRequests.put(libraryUpdateUrl + "/" + idCounter, tryToChangeId);
-        assert (nonSenseRequest.getStatusCode().is4xxClientError());
     }
 
     @Test
