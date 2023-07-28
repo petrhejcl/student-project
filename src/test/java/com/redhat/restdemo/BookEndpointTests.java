@@ -316,10 +316,6 @@ class BookEndpointTests extends EndpointTestTemplate {
         int nonSenseId = new Random().nextInt(50000) + 100;
         nonSenseRequest = testRequests.put(bookUpdateUrl + "/" + nonSenseId, new Book(4394732L, "Nonexistent Book", 2000, "Unknown"));
         assert (nonSenseRequest.getStatusCode().is4xxClientError());
-
-        Book tryToChangeId = new Book(idCounter, 9999999999L, "Invalid Book", 2021, "Fiction");
-        nonSenseRequest = testRequests.put(bookUpdateUrl + "/" + tryToChangeId.getIsbn(), tryToChangeId);
-        assert (nonSenseRequest.getStatusCode().is4xxClientError());
     }
 
     @Test

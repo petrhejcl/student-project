@@ -43,7 +43,12 @@ public class LibraryController {
         return new ResponseEntity<>(library, HttpStatus.OK);
     }
 
-    //TODO: getLibrariesByBookId
+    @GetMapping("/book/{id}")
+    public ResponseEntity<Iterable<Library>> getLibrariesByBookId(@PathVariable Integer id) {
+        Iterable<Library> libraries = libraryService.findLibrariesByBookId(id);
+        LOGGER.info("Libraries with book " + id + " listed");
+        return new ResponseEntity<>(libraries, HttpStatus.OK);
+    }
 
     @PostMapping("/add")
     public ResponseEntity<Library> addLibrary(@RequestBody Library library) {
