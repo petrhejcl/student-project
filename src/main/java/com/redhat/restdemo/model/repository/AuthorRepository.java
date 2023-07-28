@@ -15,6 +15,6 @@ public interface AuthorRepository extends CrudRepository<Author, Integer> {
             "FROM author a\n" +
             "JOIN authorship auth ON a.id = auth.author_id\n" +
             "JOIN book b ON b.id = auth.book_id\n" +
-            "WHERE b.id = :bookid", nativeQuery = true)
-    Iterable<Author> findAuthorsByBook(@Param("bookid") Integer bookid);
+            "WHERE b.id = :bookId", nativeQuery = true)
+    Iterable<Author> findAuthorsByBook(@Param("bookId") Integer bookId);
 }

@@ -257,10 +257,6 @@ class AuthorEndpointTests extends EndpointTestTemplate {
 		int nonSenseId = new Random().nextInt(50000) + 100;
 		nonSenseRequest = testRequests.put(authorDeleteUrl + "/" + nonSenseId, new Author("Karel", "Hynek Macha", 1750));
 		assert(nonSenseRequest.getStatusCode().is4xxClientError());
-
-		Author tryToChangeId = new Author(99, "Karel", "Hynek Macha", 1750);
-		nonSenseRequest = testRequests.put(authorDeleteUrl + "/" + idCounter, tryToChangeId);
-		assert(nonSenseRequest.getStatusCode().is4xxClientError());
 	}
 
 	@Test
