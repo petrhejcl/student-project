@@ -56,21 +56,21 @@ public class LibraryController {
     public ResponseEntity<Library> updateLibrary(@PathVariable Integer id, @RequestBody Library library) {
         Library updatedLibrary = libraryService.updateLibrary(id, library);
         if (updatedLibrary == null) {
-            LOGGER.info("Library not found");
-            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+            LOGGER.info("Attempt to update invalid library");
+            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         }
         LOGGER.info("Library updated successfully!");
-        return new ResponseEntity<>(updatedLibrary, HttpStatus.OK);
+        return new ResponseEntity<>(updatedLibrary, HttpStatus.ACCEPTED);
     }
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Library> deleteLibrary(@PathVariable Integer id) {
         Library deletedLibrary = libraryService.deleteLibrary(id);
         if (deletedLibrary == null) {
-            LOGGER.info("Library not found");
-            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+            LOGGER.info("Attempt to delete invalid library");
+            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         }
         LOGGER.info("Library deleted successfully!");
-        return new ResponseEntity<>(deletedLibrary, HttpStatus.OK);
+        return new ResponseEntity<>(deletedLibrary, HttpStatus.ACCEPTED);
     }
 }
