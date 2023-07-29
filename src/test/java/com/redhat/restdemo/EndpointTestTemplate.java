@@ -52,23 +52,4 @@ class EndpointTestTemplate {
     protected String createURLWithPort(String uri) {
         return baseUrl + uri;
     }
-
-    protected <T> ResponseEntity<String> postAndIncrease(String url, T object) {
-        ResponseEntity<String> response = testRequests.post(url, object);
-        if (response.getStatusCode().is2xxSuccessful()) {
-            idCounter++;
-        }
-        return response;
-    }
-
-    protected <T, ID> void prepareSchema(CrudRepository<T, ID> repository, String url, Collection<T> data) throws IOException {
-        repository.deleteAll();
-
-        for (Object object : data) {
-            ResponseEntity<String> response = postAndIncrease(url, object);
-            if (!response.getStatusCode().is2xxSuccessful()) {
-                throw new IOException("Preparing schema was not successful");
-            }
-        }
-    }
 }
