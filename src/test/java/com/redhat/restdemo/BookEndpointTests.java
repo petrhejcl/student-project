@@ -33,6 +33,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
 class BookEndpointTests extends EndpointTestTemplate {
+    private final String baseBookUrl = createURLWithPort("/book");
+
     @Autowired
     private BookRepository bookRepository;
 
@@ -90,19 +92,14 @@ class BookEndpointTests extends EndpointTestTemplate {
     void testGetAllBooksEndpoint() throws IOException {
         prepareBookSchema();
 
-        String bookUrl = createURLWithPort("/book");
-
-        ResponseEntity<String> response = testRequests.get(bookUrl);
+        ResponseEntity<String> response = testRequests.get(baseBookUrl);
 
         List<Book> books = objectMapper.readValue(response.getBody(), new TypeReference<>() {
         });
         assertThat(books.size(), is(TestData.books.size()));
 
-        for (int i = 0; i < TestData.books.size(); i++) {
-            assertThat(books.get(i).getIsbn(), is(TestData.books.get(i).getIsbn()));
-            assertThat(books.get(i).getName(), is(TestData.books.get(i).getName()));
-            assertThat(books.get(i).getYearOfRelease(), is(TestData.books.get(i).getYearOfRelease()));
-            assertThat(books.get(i).getGenre(), is(TestData.books.get(i).getGenre()));
+        for (Book book : TestData.books) {
+            assertThat(books.contains(book), is(true));
         }
     }
 
@@ -110,22 +107,18 @@ class BookEndpointTests extends EndpointTestTemplate {
     void testGetBookById() throws IOException {
         prepareBookSchema();
 
-        String bookUrl = createURLWithPort("/book");
-
-        ResponseEntity<String> response = testRequests.get(bookUrl);
-        List<Book> books = objectMapper.readValue(response.getBody(), new TypeReference<>() {
-        });
-
-        for (Book book : books) {
+        for (Book book : bookRepository.findAll()) {
             Integer id = book.getId();
-            Book testBook = objectMapper.readValue(testRequests.get(bookUrl + "/" + id).getBody(), new TypeReference<>() {
+            ResponseEntity<String> response = testRequests.get(baseBookUrl + "/" + id);
+            assertThat(response.getStatusCode().is2xxSuccessful(), is(true));
+            Book testBook = objectMapper.readValue(response.getBody(), new TypeReference<>() {
             });
             assertThat(book, is(testBook));
         }
 
         int nonSenseId = new Random().nextInt(50000) + 100;
-        ResponseEntity<String> nonSenseResponse = testRequests.get(bookUrl + "/" + nonSenseId);
-        assert (nonSenseResponse.getStatusCode().is4xxClientError());
+        ResponseEntity<String> nonSenseResponse = testRequests.get(baseBookUrl + "/" + nonSenseId);
+        assertThat(nonSenseResponse.getStatusCode().is4xxClientError(), is(true));
     }
 
     @Test
@@ -150,9 +143,9 @@ class BookEndpointTests extends EndpointTestTemplate {
         for (String genre : genres.keySet()) {
             Iterable<Book> genreBooks = objectMapper.readValue(testRequests.get(genreUrl + genre).getBody(), new TypeReference<>() {
             });
-            assert(countIterable(genreBooks) == genres.get(genre).size());
+            assertThat(countIterable(genreBooks), is(genres.get(genre).size()));
             for (Book book : genreBooks) {
-                assert(genres.get(genre).contains(book));
+                assertThat(genres.get(genre).contains(book), is(true));
             }
         }
     }
@@ -161,18 +154,19 @@ class BookEndpointTests extends EndpointTestTemplate {
     void testGetBooksByAuthor() throws IOException {
         prepareAuthorshipSchema();
 
-        String authorUrl = createURLWithPort("/book/author");
+        String authorUrl = baseBookUrl + "/author/";
 
         for (Author author : authorRepository.findAll()) {
             Integer authorId = author.getId();
-            ResponseEntity<String> response = testRequests.get(authorUrl+ "/" + authorId);
-            assert(response.getStatusCode().is2xxSuccessful());
+            ResponseEntity<String> response = testRequests.get(authorUrl + authorId);
+            assertThat(response.getStatusCode().is2xxSuccessful(), is(true));
             List<Book> books = objectMapper.readValue(response.getBody(), new TypeReference<>() {
             });
+            int booksCount = books.size();
             assertThat(books.size(), is(1));
 
             authorshipRepository.save(new Authorship(idCounter, authorId));
-            response = testRequests.get(authorUrl + "/" + authorId);
+            response = testRequests.get(authorUrl + authorId);
             assert(response.getStatusCode().is2xxSuccessful());
             books = objectMapper.readValue(response.getBody(), new TypeReference<>() {
             });

@@ -3,8 +3,12 @@ package com.redhat.restdemo;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.redhat.restdemo.model.entity.Book;
 import com.redhat.restdemo.model.entity.Library;
+import com.redhat.restdemo.model.entity.Ownership;
+import com.redhat.restdemo.model.repository.BookRepository;
 import com.redhat.restdemo.model.repository.LibraryRepository;
+import com.redhat.restdemo.model.repository.OwnershipRepository;
 import com.redhat.restdemo.utils.TestData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,7 +16,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import static com.redhat.restdemo.utils.TestUtils.countIterable;
@@ -20,82 +26,68 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
 class LibraryEndpointTests extends EndpointTestTemplate {
+    private final String baseLibraryUrl = createURLWithPort("/library");
+
     @Autowired
     LibraryRepository libraryRepository;
 
-    @BeforeEach
-    public void prepareLibraryScheme() throws IOException {
-        prepareSchema(libraryRepository, createURLWithPort("/library/add"), TestData.libraries);
+    @Autowired
+    BookRepository bookRepository;
+
+    @Autowired
+    OwnershipRepository ownershipRepository;
+
+    public void prepareLibraryScheme() {
+        libraryRepository.saveAll(TestData.libraries);
+        assertThat(countIterable(libraryRepository.findAll()), is((long) TestData.books.size()));
+    }
+
+    private List<Ownership> prepareOwnershipSchema() {
+        List<Ownership> ownerships = new ArrayList<>();
+        for (Map.Entry<Book, Library> entry : TestData.ownership.entrySet()) {
+            Integer bookId = bookRepository.save(entry.getKey()).getId();
+            Integer libraryId = libraryRepository.save(entry.getValue()).getId();
+            Ownership ownership = new Ownership(libraryId, bookId);
+            ownerships.add(ownershipRepository.save(ownership));
+        }
+        assertThat(countIterable(ownershipRepository.findAll()), is((long) TestData.ownership.size()));
+        return ownerships;
     }
 
     @Test
     void testGetAllLibrariesEndpoint() throws JsonProcessingException {
-        String libraryUrl = createURLWithPort("/library");
+        prepareLibraryScheme();
 
-        ResponseEntity<String> response = testRequests.get(libraryUrl);
+        ResponseEntity<String> response = testRequests.get(baseLibraryUrl);
 
         ObjectMapper objectMapper = new ObjectMapper();
-        List<Library> libraries = objectMapper.readValue(response.getBody(), new TypeReference<List<Library>>() {
+
+        List<Library> libraries = objectMapper.readValue(response.getBody(), new TypeReference<>() {
         });
-        assertThat(libraries.size(), is(6));
 
-        assertThat(libraries.get(0).getName(), is("Central Library"));
-        assertThat(libraries.get(0).getCity(), is("New York"));
-        assertThat(libraries.get(0).getStreet(), is("Main Street"));
-        assertThat(libraries.get(0).getStreetNumber(), is(123));
-        assertThat(libraries.get(0).getDescription(), is("The largest library in the city"));
+        assertThat(libraries.size(), is(TestData.libraries.size()));
 
-        assertThat(libraries.get(1).getName(), is("Community Library"));
-        assertThat(libraries.get(1).getCity(), is("Chicago"));
-        assertThat(libraries.get(1).getStreet(), is("Elm Street"));
-        assertThat(libraries.get(1).getStreetNumber(), is(456));
-        assertThat(libraries.get(1).getDescription(), is("A community-focused library with diverse collections"));
-
-        assertThat(libraries.get(2).getName(), is("Tech Library"));
-        assertThat(libraries.get(2).getCity(), is("San Francisco"));
-        assertThat(libraries.get(2).getStreet(), is("Oak Street"));
-        assertThat(libraries.get(2).getStreetNumber(), is(789));
-        assertThat(libraries.get(2).getDescription(), is("Specializes in technology and computer science resources"));
-
-        assertThat(libraries.get(3).getName(), is("Historical Library"));
-        assertThat(libraries.get(3).getCity(), is("London"));
-        assertThat(libraries.get(3).getStreet(), is("Abbey Road"));
-        assertThat(libraries.get(3).getStreetNumber(), is(10));
-        assertThat(libraries.get(3).getDescription(), is("Preserves historical manuscripts and rare books"));
-
-        assertThat(libraries.get(4).getName(), is("Children's Library"));
-        assertThat(libraries.get(4).getCity(), is("Sydney"));
-        assertThat(libraries.get(4).getStreet(), is("Park Street"));
-        assertThat(libraries.get(4).getStreetNumber(), is(321));
-        assertThat(libraries.get(4).getDescription(), is("Offers a wide range of books and activities for children"));
-
-        assertThat(libraries.get(5).getName(), is("University Library"));
-        assertThat(libraries.get(5).getCity(), is("Tokyo"));
-        assertThat(libraries.get(5).getStreet(), is("University Avenue"));
-        assertThat(libraries.get(5).getStreetNumber(), is(987));
-        assertThat(libraries.get(5).getDescription(), is("Supports academic research and provides resources for students"));
+        for (Library library : TestData.libraries) {
+            assertThat(libraries.contains(library), is(true));
+        }
     }
 
     @Test
-    public void testGetLibraryById() throws IOException {
-        String libraryUrl = createURLWithPort("/library");
+    public void testGetLibraryById() throws JsonProcessingException {
+        prepareLibraryScheme();
 
-        ObjectMapper objectMapper = new ObjectMapper();
-
-        ResponseEntity<String> response = testRequests.get(libraryUrl);
-        List<Library> libraries = objectMapper.readValue(response.getBody(), new TypeReference<List<Library>>() {
-        });
-
-        for (Library library : libraries) {
+        for (Library library : libraryRepository.findAll()) {
             Integer id = library.getId();
-            Library testLibrary = objectMapper.readValue(testRequests.get(libraryUrl + "/" + id).getBody(), new TypeReference<>() {
+            ResponseEntity<String> response = testRequests.get(baseLibraryUrl + "/" + id);
+            assertThat(response.getStatusCode().is2xxSuccessful(), is(true));
+            Library testLibrary = objectMapper.readValue(response.getBody(), new TypeReference<>() {
             });
             assertThat(library, is(testLibrary));
         }
 
         int nonSenseId = new Random().nextInt(50000) + 100;
-        ResponseEntity<String> nonSenseResponse = testRequests.get(libraryUrl + "/" + nonSenseId);
-        assert (nonSenseResponse.getStatusCode().is4xxClientError());
+        ResponseEntity<String> nonSenseResponse = testRequests.get(baseLibraryUrl + "/" + nonSenseId);
+        assertThat(nonSenseResponse.getStatusCode().is4xxClientError(), is(true));
     }
 
     @Test

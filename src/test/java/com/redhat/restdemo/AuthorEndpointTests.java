@@ -27,6 +27,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
 class AuthorEndpointTests extends EndpointTestTemplate {
+	private final String baseAuthorUrl = createURLWithPort("/author");
+
 	@Autowired
 	private AuthorRepository authorRepository;
 
@@ -64,9 +66,7 @@ class AuthorEndpointTests extends EndpointTestTemplate {
 	void testGetAllAuthorsEndpoint() throws IOException {
 		prepareAuthorSchema();
 
-		String authorUrl = createURLWithPort("/author");
-
-		ResponseEntity<String> response = testRequests.get(authorUrl);
+		ResponseEntity<String> response = testRequests.get(baseAuthorUrl);
 
 		assertThat(response.getStatusCode().is2xxSuccessful(), is(true));
 
@@ -84,11 +84,9 @@ class AuthorEndpointTests extends EndpointTestTemplate {
 	void testGetAuthorById() throws IOException {
 		prepareAuthorSchema();
 
-		String authorUrl = createURLWithPort("/author/");
-
 		for (Author author : authorRepository.findAll()) {
 			Integer id = author.getId();
-			ResponseEntity<String> response = testRequests.get(authorUrl + id);
+			ResponseEntity<String> response = testRequests.get(baseAuthorUrl + id);
 			assertThat(response.getStatusCode().is2xxSuccessful(), is(true));
 			Author testAuthor = objectMapper.readValue(response.getBody(), new TypeReference<>() {
 			});
@@ -96,7 +94,7 @@ class AuthorEndpointTests extends EndpointTestTemplate {
 		}
 
 		int nonSenseId = new Random().nextInt(50000) + 100;
-		ResponseEntity<String> nonSenseResponse = testRequests.get(authorUrl + "/" + nonSenseId);
+		ResponseEntity<String> nonSenseResponse = testRequests.get(baseAuthorUrl + "/" + nonSenseId);
 		assertThat(nonSenseResponse.getStatusCode().is4xxClientError(), is(true));
 	}
 
@@ -104,7 +102,7 @@ class AuthorEndpointTests extends EndpointTestTemplate {
 	void testGetAuthorsByBookEndpoint() throws IOException {
 		List<Authorship> authorships = prepareAuthorshipSchema();
 
-		String bookUrl = createURLWithPort("/author/book/");
+		String bookUrl = baseAuthorUrl + "/book/";
 
 		for (Authorship authorship : authorships) {
 			Integer bookId = authorship.getBookId();
