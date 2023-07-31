@@ -58,7 +58,7 @@ class OwnershipEndpointTests extends EndpointTestTemplate {
     }
 
     @Test
-    void testGetAllOwnershipsEndpoint() throws JsonProcessingException {
+    void shouldListAllOwnerships() throws JsonProcessingException {
         prepareOwnershipsSchema();
 
         ResponseEntity<String> response = testRequests.get(createURLWithPort("/ownership"));
@@ -75,7 +75,7 @@ class OwnershipEndpointTests extends EndpointTestTemplate {
     }
 
     @Test
-    void testAddOwnershipEndpoint() throws JsonProcessingException {
+    void shouldAddNewOwnership() throws JsonProcessingException {
         prepareOwnerships();
 
         ObjectMapper objectMapper = new ObjectMapper();
@@ -102,7 +102,7 @@ class OwnershipEndpointTests extends EndpointTestTemplate {
     }
 
     @Test
-    void testDeleteOwnershipEndpoint() {
+    void shouldDeleteOwnership() {
         prepareOwnershipsSchema();
 
         String deleteOwnershipUrl = createURLWithPort("/ownership/delete");

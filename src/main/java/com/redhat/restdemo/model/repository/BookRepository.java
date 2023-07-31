@@ -13,9 +13,8 @@ public interface BookRepository extends CrudRepository<Book, Integer> {
 
     @Query(value = "SELECT b.id, b.isbn, b.name, b.year_of_release, b.genre " +
             "FROM book b " +
-            "JOIN authorship auth ON b.id = auth.author_id" +
-            " JOIN author a ON a.id = auth.author_id " +
-            "WHERE author_id = :authorId", nativeQuery = true)
+            "INNER JOIN authorship a ON b.id = a.book_id " +
+            "WHERE a.author_id = :authorId", nativeQuery = true)
     Iterable<Book> findBooksByAuthor(@Param("authorId") Integer authorId);
 
     @Query(value = "SELECT b.id, b.isbn, b.name, b.year_of_release, b.genre\n" +
