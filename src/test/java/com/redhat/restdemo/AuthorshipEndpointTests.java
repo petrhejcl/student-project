@@ -49,7 +49,7 @@ class AuthorshipEndpointTests extends EndpointTestTemplate {
     }
 
     @Test
-    void testGetAuthorshipEndpoint() throws IOException {
+    void shouldListAllAuthorships() throws IOException {
         prepareAuthorBookSchemas();
 
         String authorshipUrl = createURLWithPort("/authorship");
@@ -97,7 +97,7 @@ class AuthorshipEndpointTests extends EndpointTestTemplate {
     }
 
     @Test
-    void testAddAuthorshipEndpoint() throws JsonProcessingException {
+    void shouldAddNewAuthorship() throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
 
         String addAuthorshipUrl = createURLWithPort("/authorship/add");
@@ -152,7 +152,7 @@ class AuthorshipEndpointTests extends EndpointTestTemplate {
     }
 
     @Test
-    void testDeleteAuthorshipEndpoint() {
+    void shouldDeleteAuthorship() {
         prepareAuthorBookSchemas();
 
         String authorshipDeleteUrl = createURLWithPort("/authorship/delete");
