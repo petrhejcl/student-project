@@ -7,9 +7,7 @@ import com.redhat.restdemo.model.repository.OwnershipRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.swing.text.html.Option;
 import javax.transaction.Transactional;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @Transactional

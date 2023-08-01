@@ -3,8 +3,9 @@ package com.redhat.restdemo;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.redhat.restdemo.model.entity.*;
+import com.redhat.restdemo.model.entity.Book;
+import com.redhat.restdemo.model.entity.Library;
+import com.redhat.restdemo.model.entity.Ownership;
 import com.redhat.restdemo.model.repository.BookRepository;
 import com.redhat.restdemo.model.repository.LibraryRepository;
 import com.redhat.restdemo.model.repository.OwnershipRepository;
@@ -19,8 +20,10 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 
 import javax.annotation.PostConstruct;
-import javax.management.ObjectName;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Random;
 import java.util.stream.StreamSupport;
 
 import static com.redhat.restdemo.utils.TestUtils.countIterable;
