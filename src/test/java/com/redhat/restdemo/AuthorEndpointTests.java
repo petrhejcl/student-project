@@ -17,6 +17,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
@@ -27,6 +31,24 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
 class AuthorEndpointTests extends EndpointTestTemplate {
+	@Container
+	private static PostgreSQLContainer postgresqlContainer;
+
+	static {
+		postgresqlContainer = new PostgreSQLContainer("postgres:14")
+				.withDatabaseName("postgres")
+				.withUsername("compose-postgres")
+				.withPassword("compose-postgres");
+		postgresqlContainer.start();
+	}
+
+	@DynamicPropertySource
+	protected static void setDatasourceProperties(final DynamicPropertyRegistry registry) {
+		registry.add("spring.datasource.url", postgresqlContainer::getJdbcUrl);
+		registry.add("spring.datasource.username", postgresqlContainer::getUsername);
+		registry.add("spring.datasource.password", postgresqlContainer::getPassword);
+	}
+
 	@Autowired
 	private AuthorRepository authorRepository;
 
@@ -52,7 +74,7 @@ class AuthorEndpointTests extends EndpointTestTemplate {
 		deleteAuthorUrl = baseAuthorUrl + "/delete/";
 	}
 
-	public void prepareAuthorSchema() {
+	private void prepareAuthorSchema() {
 		authorRepository.saveAll(TestData.authors);
 		assertThat(countIterable(authorRepository.findAll()), is((long) TestData.authors.size()));
 	}
