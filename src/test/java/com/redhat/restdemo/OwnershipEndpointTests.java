@@ -6,6 +6,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.redhat.restdemo.model.entity.Book;
 import com.redhat.restdemo.model.entity.Library;
 import com.redhat.restdemo.model.entity.Ownership;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.redhat.restdemo.model.entity.*;
 import com.redhat.restdemo.model.repository.BookRepository;
 import com.redhat.restdemo.model.repository.LibraryRepository;
 import com.redhat.restdemo.model.repository.OwnershipRepository;
@@ -24,6 +26,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
+import javax.management.ObjectName;
+import java.util.*;
 import java.util.stream.StreamSupport;
 
 import static com.redhat.restdemo.utils.TestUtils.countIterable;

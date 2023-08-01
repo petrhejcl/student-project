@@ -1,6 +1,9 @@
 package com.redhat.restdemo;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.redhat.restdemo.controllers.AuthorController;
 import com.redhat.restdemo.model.entity.Author;
 import com.redhat.restdemo.model.entity.Authorship;
 import com.redhat.restdemo.model.entity.Book;
@@ -9,6 +12,8 @@ import com.redhat.restdemo.model.repository.AuthorshipRepository;
 import com.redhat.restdemo.model.repository.BookRepository;
 import com.redhat.restdemo.utils.TestData;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

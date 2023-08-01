@@ -2,6 +2,8 @@ package com.redhat.restdemo;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.restdemo.utils.TestRequests;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Value;
