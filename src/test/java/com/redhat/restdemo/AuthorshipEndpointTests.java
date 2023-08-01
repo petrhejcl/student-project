@@ -14,18 +14,53 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
+import java.util.stream.StreamSupport;
 
 import static com.redhat.restdemo.utils.TestUtils.countIterable;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
 class AuthorshipEndpointTests extends EndpointTestTemplate {
+    @Container
+    private static PostgreSQLContainer postgresqlContainer;
+
+    static {
+        postgresqlContainer = new PostgreSQLContainer("postgres:14")
+                .withDatabaseName("postgres")
+                .withUsername("compose-postgres")
+                .withPassword("compose-postgres");
+        postgresqlContainer.start();
+    }
+
+    @DynamicPropertySource
+    protected static void setDatasourceProperties(final DynamicPropertyRegistry registry) {
+        registry.add("spring.datasource.url", postgresqlContainer::getJdbcUrl);
+        registry.add("spring.datasource.username", postgresqlContainer::getUsername);
+        registry.add("spring.datasource.password", postgresqlContainer::getPassword);
+    }
+
+    private String baseAuthorshipUrl;
+    private String addAuthorshipUrl;
+    private String deleteAuthorshipUrl;
+
+    @PostConstruct
+    public void initializeUrls() {
+        baseAuthorshipUrl = createURLWithPort("/authorship");
+        addAuthorshipUrl = baseAuthorshipUrl + "/add";
+        deleteAuthorshipUrl = baseAuthorshipUrl + "/delete/";
+    }
+
     @Autowired
     private AuthorshipRepository authorshipRepository;
 
@@ -39,146 +74,135 @@ class AuthorshipEndpointTests extends EndpointTestTemplate {
         for (Map.Entry<Author, Book> entry : TestData.authorship.entrySet()) {
             Integer authorId = authorRepository.save(entry.getKey()).getId();
             Integer bookId = bookRepository.save(entry.getValue()).getId();
-            authorshipRepository.save(new Authorship(authorId, bookId));
+            authorshipRepository.save(new Authorship(bookId, authorId));
         }
     }
 
     @AfterEach
     public void clearRepository() {
         authorshipRepository.deleteAll();
+        authorRepository.deleteAll();
+        bookRepository.deleteAll();
     }
 
     @Test
     void shouldListAllAuthorships() throws IOException {
         prepareAuthorBookSchemas();
 
-        String authorshipUrl = createURLWithPort("/authorship");
+        ResponseEntity<String> response = testRequests.get(baseAuthorshipUrl);
 
-        ResponseEntity<String> response = testRequests.get(authorshipUrl);
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        List<Authorship> bookAuthorship = objectMapper.readValue(response.getBody(), new TypeReference<>() {
+        List<Authorship> authorships = objectMapper.readValue(response.getBody(), new TypeReference<>() {
         });
 
-        assertThat(bookAuthorship.size(), is(6));
+        assertThat(authorships.size(), is(TestData.authorship.size()));
 
-        for (Authorship authorship : bookAuthorship) {
+        for (Authorship authorship : authorships) {
             Integer authorId = authorship.getAuthorId();
             Integer bookId = authorship.getBookId();
 
             Optional<Author> author = authorRepository.findById(authorId);
-            assert (author.isPresent());
+            assertThat(author.isPresent(), is(true));
             Optional<Book> book = bookRepository.findById(bookId);
-            assert (book.isPresent());
+            assertThat(book.isPresent(), is(true));
 
-            switch (author.get().getSurname()) {
-                case "Rowling":
-                    assertThat(book.get().getIsbn(), is(9780747532743L));
-                    break;
-                case "Orwell":
-                    assertThat(book.get().getIsbn(), is(9780451524935L));
-                    break;
-                case "Austen":
-                    assertThat(book.get().getIsbn(), is(9780141439518L));
-                    break;
-                case "Hemingway":
-                    assertThat(book.get().getIsbn(), is(9780684801223L));
-                    break;
-                case "Angelou":
-                    assertThat(book.get().getIsbn(), is(9780345514400L));
-                    break;
-                case "Bukowski":
-                    assertThat(book.get().getIsbn(), is(9780876857632L));
-                    break;
-                default:
-                    throw new RuntimeException("Author with given surname should not be there");
-            }
+            assertThat(TestData.authorship.get(author.get()), is(book.get()));
         }
     }
 
     @Test
-    void shouldAddNewAuthorship() throws JsonProcessingException {
-        ObjectMapper objectMapper = new ObjectMapper();
+    void shouldAddNewAuthorship() {
+        Long authorshipCounter = countIterable(authorshipRepository.findAll());
 
-        String addAuthorshipUrl = createURLWithPort("/authorship/add");
+        for (Map.Entry<Author, Book> entry : TestData.authorship.entrySet()) {
+            Integer authorId = authorRepository.save(entry.getKey()).getId();
+            Integer bookId = bookRepository.save(entry.getValue()).getId();
+            assertThat(StreamSupport
+                    .stream(bookRepository.findBooksByAuthor(authorId).spliterator(), false)
+                    .anyMatch(book -> book.getId().equals(bookId)), is(false));
 
-        Book testBook1 = new Book(1L, "Test 1", 2000, "Test genre 1");
-        bookRepository.save(testBook1);
-        Book testBook2 = new Book(2L, "Test 2", 1900, "Test genre 3");
-        bookRepository.save(testBook2);
-        Book testBook3 = new Book(3L, "Test 3", 1800, "Test genre 3");
-        bookRepository.save(testBook3);
+            ResponseEntity<String> response = testRequests.post(addAuthorshipUrl, (new Authorship(authorId, bookId)));
+            assertThat(response.getStatusCode().is2xxSuccessful(), is(true));
+            assertThat(authorshipCounter + 1, is(countIterable(authorshipRepository.findAll())));
+            authorshipCounter++;
+            assertThat(StreamSupport
+                    .stream(bookRepository.findBooksByAuthor(authorId).spliterator(), false)
+                    .anyMatch(book -> book.getId().equals(bookId)), is(true));
+        }
+    }
 
-        Author testAuthor1 = new Author("John", "Doe", 2010);
-        authorRepository.save(testAuthor1);
-        Author testAuthor2 = new Author("Pepa", "Novak", 1910);
-        authorRepository.save(testAuthor2);
-        Author testAuthor3 = new Author("Pablo", "Neruda", 1810);
-        authorRepository.save(testAuthor3);
+    @Test
+    void shouldNotAddAnythingWhenTryingToAddAuthorshipToNonExistingAuthor() {
+        Long authorshipCount = countIterable(authorshipRepository.findAll());
 
-        long authorshipCounter = 0L;
-
-        assertThat(authorshipRepository.count(), is(authorshipCounter));
-
-        Iterable<Author> authors = authorRepository.findAll();
-        Iterable<Book> books = bookRepository.findAll();
-
-        for (Author author : authors) {
-            for (Book book : books) {
-                Authorship newAuthorship = new Authorship(author.getId(), book.getId());
-                ResponseEntity<String> response = testRequests.post(addAuthorshipUrl, newAuthorship);
-                assert(response.getStatusCode().is2xxSuccessful());
-                authorshipCounter++;
-                assertThat(authorshipCounter, is(authorshipRepository.count()));
-                Authorship authorship = objectMapper.readValue(response.getBody(), new TypeReference<>() {
-                });
-                assertThat(authorshipRepository.findById(authorship.getId()).get().getAuthorId(), is(newAuthorship.getAuthorId()));
-                assertThat(authorshipRepository.findById(authorship.getId()).get().getBookId(), is(newAuthorship.getBookId()));
-            }
+        for (int i = 0; i < 3; i++) {
+            Author justSomeRandomAuthor = new Author("Random author", "" + i, 1730 + i);
+            authorRepository.save(justSomeRandomAuthor);
         }
 
-        Authorship nonSenseAuthorship;
-        ResponseEntity<String> nonSenseResponse;
+        int nonSenseAuthorId = new Random().nextInt(50000) + 1000;
+        assertThat(authorRepository.existsById(nonSenseAuthorId), is(false));
+        Book testBook = bookRepository.save(new Book(111L, "Test book", 1900, "Great book"));
+        Authorship nonSenseAuthorship = new Authorship(nonSenseAuthorId, testBook.getId());
+        ResponseEntity<String> nonSenseResponse = testRequests.post(addAuthorshipUrl, nonSenseAuthorship);
+        assertThat(nonSenseResponse.getStatusCode().is4xxClientError(), is(true));
+        assertThat(authorshipCount, is(countIterable(authorshipRepository.findAll())));
 
-        int nonSenseAuthorId = new Random().nextInt(50000) + 100;
-        nonSenseAuthorship = new Authorship(nonSenseAuthorId, books.iterator().next().getId());
-        nonSenseResponse = testRequests.post(addAuthorshipUrl, nonSenseAuthorship);
-        assert(nonSenseResponse.getStatusCode().is4xxClientError());
+    }
 
-        int nonSenseBookId = new Random().nextInt(50000) + 100;
-        nonSenseAuthorship = new Authorship(authors.iterator().next().getId(), nonSenseBookId);
-        nonSenseResponse = testRequests.post(addAuthorshipUrl, nonSenseAuthorship);
-        assert(nonSenseResponse.getStatusCode().is4xxClientError());
+    @Test
+    void shouldNotAddAnythingWhenTryingToAddAuthorshipToNonExistingBook() {
+        Long authorshipCount = countIterable(authorshipRepository.findAll());
+
+        for (int i = 0; i < 3; i++) {
+            Book justSomeRandomBook = new Book((long) i, "Test book", 1900, "Sci-Fi");
+            bookRepository.save(justSomeRandomBook);
+        }
+
+        int nonSenseBookId = new Random().nextInt(50000) + 1000;
+        assertThat(bookRepository.existsById(nonSenseBookId), is(false));
+        Author testAuthor = authorRepository.save(new Author("Test", "Author", 1900));
+        Authorship nonSenseAuthorship = new Authorship(testAuthor.getId(), nonSenseBookId);
+        ResponseEntity<String> nonSenseResponse = testRequests.post(addAuthorshipUrl, nonSenseAuthorship);
+        assertThat(nonSenseResponse.getStatusCode().is4xxClientError(), is(true));
+        assertThat(authorshipCount, is(countIterable(authorshipRepository.findAll())));
+    }
+
+    @Test
+    void shouldNotDeleteAnythingWhenTryingToDeleteInvalidId() {
+        prepareAuthorBookSchemas();
+
+        Iterable<Authorship> authorships = authorshipRepository.findAll();
+
+        for (int i = 0; i < 5; i++) {
+            int nonSenseId = new Random().nextInt(50000) + 1000;
+            ResponseEntity<String> response = testRequests.delete(
+                    deleteAuthorshipUrl + nonSenseId);
+            assertThat(response.getStatusCode().is4xxClientError(), is(true));
+            assertThat(authorships, is(authorshipRepository.findAll()));
+        }
     }
 
     @Test
     void shouldDeleteAuthorship() {
         prepareAuthorBookSchemas();
 
-        String authorshipDeleteUrl = createURLWithPort("/authorship/delete");
-
         Iterable<Authorship> authorships = authorshipRepository.findAll();
 
         Long authorshipCounter = countIterable(authorships);
 
-        for (int i = 0; i < 5; i++) {
-            int nonSenseId = new Random().nextInt(50000) + 100;
-            ResponseEntity<String> response = testRequests.delete(
-                    authorshipDeleteUrl + "/" + nonSenseId);
-            assert(response.getStatusCode().is4xxClientError());
-            assertThat(countIterable(authorRepository.findAll()), is(authorshipCounter));
-        }
-
         for (Authorship authorship : authorships) {
             Integer authorshipId = authorship.getId();
-            String deleteAuthorUrl = authorshipDeleteUrl + "/" + authorshipId;
-            assert(testRequests.delete(deleteAuthorUrl).getStatusCode().is2xxSuccessful());
-            authorshipCounter--;
+            assertThat(StreamSupport
+                    .stream(authorshipRepository.findAll().spliterator(), false)
+                    .anyMatch(as -> as.equals(authorship)), is(true));
 
-            assertThat(authorshipCounter, is(countIterable(authorshipRepository.findAll())));
-            ResponseEntity<String> getResponse = testRequests.get(createURLWithPort("/authorship/" + authorship.getId()));
-            assert(getResponse.getStatusCode().is4xxClientError());
+            ResponseEntity<String> response = testRequests.delete(deleteAuthorshipUrl + authorshipId);
+            assertThat(response.getStatusCode().is2xxSuccessful(), is(true));
+            assertThat(countIterable(authorshipRepository.findAll()), is(authorshipCounter - 1));
+            authorshipCounter--;
+            assertThat(StreamSupport
+                    .stream(authorshipRepository.findAll().spliterator(), false)
+                    .anyMatch(as -> as.equals(authorship)), is(false));
         }
     }
-
 }

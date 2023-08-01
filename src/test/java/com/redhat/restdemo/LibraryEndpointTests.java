@@ -8,10 +8,15 @@ import com.redhat.restdemo.model.repository.BookRepository;
 import com.redhat.restdemo.model.repository.LibraryRepository;
 import com.redhat.restdemo.model.repository.OwnershipRepository;
 import com.redhat.restdemo.utils.TestData;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
@@ -23,14 +28,32 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
 class LibraryEndpointTests extends EndpointTestTemplate {
-    @Autowired
-    LibraryRepository libraryRepository;
+    @Container
+    private static PostgreSQLContainer postgresqlContainer;
+
+    static {
+        postgresqlContainer = new PostgreSQLContainer("postgres:14")
+                .withDatabaseName("postgres")
+                .withUsername("compose-postgres")
+                .withPassword("compose-postgres");
+        postgresqlContainer.start();
+    }
+
+    @DynamicPropertySource
+    protected static void setDatasourceProperties(final DynamicPropertyRegistry registry) {
+        registry.add("spring.datasource.url", postgresqlContainer::getJdbcUrl);
+        registry.add("spring.datasource.username", postgresqlContainer::getUsername);
+        registry.add("spring.datasource.password", postgresqlContainer::getPassword);
+    }
 
     @Autowired
-    BookRepository bookRepository;
+    private LibraryRepository libraryRepository;
 
     @Autowired
-    OwnershipRepository ownershipRepository;
+    private BookRepository bookRepository;
+
+    @Autowired
+    private OwnershipRepository ownershipRepository;
 
     private String baseLibraryUrl;
     private String getLibrariesByBookUrl;
@@ -47,7 +70,7 @@ class LibraryEndpointTests extends EndpointTestTemplate {
         deleteLibraryUrl = baseLibraryUrl + "/delete/";
     }
 
-    public void prepareLibraryScheme() {
+    private void prepareLibraryScheme() {
         libraryRepository.saveAll(TestData.libraries);
         assertThat(countIterable(libraryRepository.findAll()), is((long) TestData.books.size()));
     }
@@ -64,8 +87,15 @@ class LibraryEndpointTests extends EndpointTestTemplate {
         return ownerships;
     }
 
+    @AfterEach
+    void clearRepos() {
+        libraryRepository.deleteAll();
+        bookRepository.deleteAll();
+        ownershipRepository.deleteAll();
+    }
+
     @Test
-    public void shouldListAllLibraries() throws JsonProcessingException {
+    void shouldListAllLibraries() throws JsonProcessingException {
         prepareLibraryScheme();
 
         ResponseEntity<String> response = testRequests.get(baseLibraryUrl);
@@ -83,7 +113,7 @@ class LibraryEndpointTests extends EndpointTestTemplate {
     }
 
     @Test
-    public void shouldListLibraryById() throws JsonProcessingException {
+    void shouldListLibraryById() throws JsonProcessingException {
         prepareLibraryScheme();
 
         for (Library library : libraryRepository.findAll()) {
@@ -101,7 +131,7 @@ class LibraryEndpointTests extends EndpointTestTemplate {
     }
 
     @Test
-    public void shouldListLibrariesByBook() throws JsonProcessingException {
+    void shouldListLibrariesByBook() throws JsonProcessingException {
         List<Ownership> ownerships = prepareOwnershipSchema();
 
         for (Ownership ownership : ownerships) {
@@ -148,7 +178,7 @@ class LibraryEndpointTests extends EndpointTestTemplate {
             Library newLibrary = objectMapper.readValue(response.getBody(), new TypeReference<>() {
             });
             assertThat(libraryRepository.findById(newLibrary.getId()).get(), is(library));
-            assertThat(countIterable(bookRepository.findAll()), is(libraryCount + 1));
+            assertThat(countIterable(libraryRepository.findAll()), is(libraryCount + 1));
             libraryCount++;
         }
     }
@@ -167,120 +197,138 @@ class LibraryEndpointTests extends EndpointTestTemplate {
         }
     }
 
-    //TODO: Update tests to match code style from here down
-
     @Test
-    public void testUpdateLibraryEndpoint() throws IOException {
-        String libraryUpdateUrl = createURLWithPort("/library/put");
-
-        ObjectMapper objectMapper = new ObjectMapper();
+    void shouldUpdateLibraryCity() {
+        prepareLibraryScheme();
 
         for (Library library : libraryRepository.findAll()) {
-            String newCity = "New City";
-            ResponseEntity<String> response = testRequests.put(libraryUpdateUrl + "/" + library.getId(), new Library(library.getName(), newCity, library.getStreet(), library.getStreetNumber(), library.getDescription()));
-            assert(response.getStatusCode().is2xxSuccessful());
-            Library updatedLibrary = objectMapper.readValue(testRequests.get(createURLWithPort("/library/" + library.getId())).getBody(), new TypeReference<>() {
-            });
-            assertThat(updatedLibrary.getName(), is(library.getName()));
-            assertThat(updatedLibrary.getCity(), is(newCity));
-            assertThat(updatedLibrary.getStreet(), is(library.getStreet()));
-            assertThat(updatedLibrary.getStreetNumber(), is(library.getStreetNumber()));
-            assertThat(updatedLibrary.getDescription(), is(library.getDescription()));
+            String newCity = "Test city";
+            ResponseEntity<String> response = testRequests.put( putLibraryUrl + library.getId(), new Library(null, newCity, null, null, null));
+            assertThat(response.getStatusCode().is2xxSuccessful(), is(true));
+            Library updatedLibrary = libraryRepository.findById(library.getId()).get();
+            Library referenceLibrary = new Library(library.getName(), newCity, library.getStreet(), library.getStreetNumber(), library.getDescription());
+            assertThat(updatedLibrary, is(referenceLibrary));
         }
-
-        for (Library library : libraryRepository.findAll()) {
-            String newStreet = "New Street";
-            testRequests.put(libraryUpdateUrl + "/" + library.getId(), new Library(library.getName(), library.getCity(), newStreet, library.getStreetNumber(), library.getDescription()));
-            Library updatedLibrary = objectMapper.readValue(testRequests.get(createURLWithPort("/library/" + library.getId())).getBody(), new TypeReference<>() {
-            });
-            assertThat(updatedLibrary.getName(), is(library.getName()));
-            assertThat(updatedLibrary.getCity(), is(library.getCity()));
-            assertThat(updatedLibrary.getStreet(), is(newStreet));
-            assertThat(updatedLibrary.getStreetNumber(), is(library.getStreetNumber()));
-            assertThat(updatedLibrary.getDescription(), is(library.getDescription()));
-        }
-
-        for (Library library : libraryRepository.findAll()) {
-            Integer newStreetNumber = 999;
-            testRequests.put(libraryUpdateUrl + "/" + library.getId(), new Library(library.getName(), library.getCity(), library.getStreet(), newStreetNumber, library.getDescription()));
-            Library updatedLibrary = objectMapper.readValue(testRequests.get(createURLWithPort("/library/" + library.getId())).getBody(), new TypeReference<>() {
-            });
-            assertThat(updatedLibrary.getName(), is(library.getName()));
-            assertThat(updatedLibrary.getCity(), is(library.getCity()));
-            assertThat(updatedLibrary.getStreet(), is(library.getStreet()));
-            assertThat(updatedLibrary.getStreetNumber(), is(newStreetNumber));
-            assertThat(updatedLibrary.getDescription(), is(library.getDescription()));
-        }
-
-        for (Library library : libraryRepository.findAll()) {
-            String newDescription = "New description";
-            testRequests.put(libraryUpdateUrl + "/" + library.getId(), new Library(library.getName(), library.getCity(), library.getStreet(), library.getStreetNumber(), newDescription));
-            Library updatedLibrary = objectMapper.readValue(testRequests.get(createURLWithPort("/library/" + library.getId())).getBody(), new TypeReference<>() {
-            });
-            assertThat(updatedLibrary.getName(), is(library.getName()));
-            assertThat(updatedLibrary.getCity(), is(library.getCity()));
-            assertThat(updatedLibrary.getStreet(), is(library.getStreet()));
-            assertThat(updatedLibrary.getStreetNumber(), is(library.getStreetNumber()));
-            assertThat(updatedLibrary.getDescription(), is(newDescription));
-        }
-
-        for (Library library : libraryRepository.findAll()) {
-            String newName = "Great Library";
-            String newCity = "Horni Dolni";
-            String newStreet = "Pricna";
-            Integer newNumber = 666;
-            String newDescription = "Perfect place";
-            testRequests.put(libraryUpdateUrl + "/" + library.getId(), new Library(newName, newCity, newStreet, newNumber, newDescription));
-            Library updatedLibrary = objectMapper.readValue(testRequests.get(createURLWithPort("/library/" + library.getId())).getBody(), new TypeReference<>() {
-            });
-            assertThat(updatedLibrary.getName(), is(newName));
-            assertThat(updatedLibrary.getCity(), is(newCity));
-            assertThat(updatedLibrary.getStreet(), is(newStreet));
-            assertThat(updatedLibrary.getStreetNumber(), is(newNumber));
-            assertThat(updatedLibrary.getDescription(), is(newDescription));
-        }
-
-        ResponseEntity<String> nonSenseRequest;
-
-        int nonSenseId = new Random().nextInt(50000) + 100;
-        nonSenseRequest = testRequests.put(libraryUpdateUrl + "/" + nonSenseId, new Library("New Library", "New City", "New Street", 123, "New description"));
-        assert (nonSenseRequest.getStatusCode().is4xxClientError());
     }
 
     @Test
-    public void testDeleteLibraryEndpoint() throws IOException {
-        String libraryDeleteUrl = createURLWithPort("/library/delete");
+    void shouldUpdateLibraryStreet() {
+        prepareLibraryScheme();
+
+        for (Library library : libraryRepository.findAll()) {
+            String newStreet = "Test street";
+            ResponseEntity<String> response = testRequests.put( putLibraryUrl + library.getId(), new Library(null, null, newStreet, null, null));
+            assertThat(response.getStatusCode().is2xxSuccessful(), is(true));
+            Library updatedLibrary = libraryRepository.findById(library.getId()).get();
+            Library referenceLibrary = new Library(library.getName(), library.getCity(), newStreet, library.getStreetNumber(), library.getDescription());
+            assertThat(updatedLibrary, is(referenceLibrary));
+        }
+    }
+
+    @Test
+    void shouldUpdateLibraryStreetNumber() {
+        prepareLibraryScheme();
+
+        for (Library library : libraryRepository.findAll()) {
+            Integer newStreetNumber = 999;
+            ResponseEntity<String> response = testRequests.put( putLibraryUrl + library.getId(), new Library(null, null, null, newStreetNumber, null));
+            assertThat(response.getStatusCode().is2xxSuccessful(), is(true));
+            Library updatedLibrary = libraryRepository.findById(library.getId()).get();
+            Library referenceLibrary = new Library(library.getName(), library.getCity(), library.getStreet(), newStreetNumber, library.getDescription());
+            assertThat(updatedLibrary, is(referenceLibrary));
+        }
+    }
+
+    @Test
+    void shouldUpdateLibraryDescription() {
+        prepareLibraryScheme();
+
+        for (Library library : libraryRepository.findAll()) {
+            String newDescription = "Great library for books";
+            ResponseEntity<String> response = testRequests.put( putLibraryUrl + library.getId(), new Library(null, null, null, null, newDescription));
+            assertThat(response.getStatusCode().is2xxSuccessful(), is(true));
+            Library updatedLibrary = libraryRepository.findById(library.getId()).get();
+            Library referenceLibrary = new Library(library.getName(), library.getCity(), library.getStreet(), library.getStreetNumber(), newDescription);
+            assertThat(updatedLibrary, is(referenceLibrary));
+        }
+    }
+
+    @Test
+    void shouldUpdateWholeLibrary() {
+        prepareLibraryScheme();
+
+        for (Library library : libraryRepository.findAll()) {
+            String newName = "Knihovna Rehore Samsy";
+            String newCity = "Praha";
+            String newStreet = "Stare Mesto";
+            Integer newStreetNumber = 111;
+            String newDescription = "Knihovnicka";
+            ResponseEntity<String> response = testRequests.put( putLibraryUrl + library.getId(), new Library(newName, newCity, newStreet, newStreetNumber, newDescription));
+            assertThat(response.getStatusCode().is2xxSuccessful(), is(true));
+            Library updatedLibrary = libraryRepository.findById(library.getId()).get();
+            Library referenceLibrary = new Library(newName, newCity, newStreet, newStreetNumber, newDescription);
+            assertThat(updatedLibrary, is(referenceLibrary));
+        }
+    }
+
+    @Test
+    void shouldNotUpdateAnythingWhenTryingToUpdateInvalidId() {
+        prepareLibraryScheme();
+
+        Iterable<Library> beforeRequestLibraries = libraryRepository.findAll();
+
+        Long nonSenseId = new Random().nextInt(50000) + 100L;
+        ResponseEntity<String >nonSenseRequest = testRequests.put(putLibraryUrl + nonSenseId, new Library("New Library", "New City", "New Street", 123, "New description"));
+        assertThat(nonSenseRequest.getStatusCode().is4xxClientError(), is(true));
+
+        Iterable<Library> afterRequestLibraries = libraryRepository.findAll();
+
+        assertThat(afterRequestLibraries, is(beforeRequestLibraries));
+    }
+
+    @Test
+    void shouldNotDeleteAnythingWhenTryingToDeleteInvalidId() {
+        prepareLibraryScheme();
 
         Iterable<Library> libraries = libraryRepository.findAll();
-
-        Long librariesCounter = countIterable(libraries);
 
         for (int i = 0; i < 5; i++) {
             int nonSenseId = new Random().nextInt(50000) + 100;
             ResponseEntity<String> response = testRequests.delete(
-                    libraryDeleteUrl + "/" + nonSenseId);
-            assert (response.getStatusCode().is4xxClientError());
-            assertThat(countIterable(libraryRepository.findAll()), is(librariesCounter));
+                    deleteLibraryUrl + nonSenseId);
+            assertThat(response.getStatusCode().is4xxClientError(), is(true));
+            assertThat(libraries, is(libraryRepository.findAll()));
         }
+    }
+
+    @Test
+    void shouldDeleteLibrary() {
+        prepareLibraryScheme();
+
+        Iterable<Library> libraries = libraryRepository.findAll();
+
+        long libraryCounter = countIterable(libraries);
 
         for (Library library : libraries) {
             Integer libraryId = library.getId();
-            String deleteLibraryUrl = libraryDeleteUrl + "/" + libraryId;
-            testRequests.delete(deleteLibraryUrl);
-            librariesCounter--;
+            ResponseEntity<String> response = testRequests.delete(deleteLibraryUrl + libraryId);
+            assertThat(response.getStatusCode().is2xxSuccessful(), is(true));
+            libraryCounter--;
 
-            assertThat(librariesCounter, is(countIterable(libraryRepository.findAll())));
-            ResponseEntity<String> getResponse = testRequests.get(createURLWithPort("/library/" + library.getId()));
-            assert (getResponse.getStatusCode().is4xxClientError());
+            assertThat(libraryCounter, is(countIterable(libraryRepository.findAll())));
+            assertThat(libraryRepository.existsById(libraryId), is(false));
         }
+    }
 
-        for (int i = 0; i <= idCounter; i++) {
-            ResponseEntity<String> response = testRequests.delete(
-                    libraryDeleteUrl + "/" + i);
-            assert (response.getStatusCode().is4xxClientError());
-            assertThat(countIterable(libraryRepository.findAll()), is(librariesCounter));
+    @Test
+    void shouldDeleteAllConnectedOwnershipsWhenDeletingLibrary() {
+        List<Ownership> ownerships = prepareOwnershipSchema();
+
+        for (Ownership ownership : ownerships) {
+            assertThat(ownershipRepository.existsById(ownership.getId()), is(true));
+            Integer libraryId = ownership.getLibraryId();
+            testRequests.delete(deleteLibraryUrl + libraryId);
+            assertThat(ownershipRepository.existsById(ownership.getId()), is(false));
         }
-
-        assertThat(countIterable(libraryRepository.findAll()), is(0L));
     }
 }
