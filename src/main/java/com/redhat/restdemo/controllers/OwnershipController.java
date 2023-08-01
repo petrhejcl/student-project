@@ -1,6 +1,5 @@
 package com.redhat.restdemo.controllers;
 
-import com.redhat.restdemo.model.entity.Authorship;
 import com.redhat.restdemo.model.entity.Ownership;
 import com.redhat.restdemo.model.service.OwnershipService;
 import org.slf4j.Logger;
