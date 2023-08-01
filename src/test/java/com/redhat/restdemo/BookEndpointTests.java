@@ -2,16 +2,8 @@ package com.redhat.restdemo;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.redhat.restdemo.model.entity.Author;
-import com.redhat.restdemo.model.entity.Authorship;
-import com.redhat.restdemo.model.entity.Book;
-import com.redhat.restdemo.model.entity.Library;
-import com.redhat.restdemo.model.entity.Ownership;
-import com.redhat.restdemo.model.repository.AuthorRepository;
-import com.redhat.restdemo.model.repository.AuthorshipRepository;
-import com.redhat.restdemo.model.repository.BookRepository;
-import com.redhat.restdemo.model.repository.LibraryRepository;
-import com.redhat.restdemo.model.repository.OwnershipRepository;
+import com.redhat.restdemo.model.entity.*;
+import com.redhat.restdemo.model.repository.*;
 import com.redhat.restdemo.utils.TestData;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -24,14 +16,7 @@ import org.testcontainers.junit.jupiter.Container;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 import static com.redhat.restdemo.utils.TestUtils.countIterable;
 import static org.hamcrest.MatcherAssert.assertThat;

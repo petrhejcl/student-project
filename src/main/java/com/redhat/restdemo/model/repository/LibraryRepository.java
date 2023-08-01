@@ -1,6 +1,5 @@
 package com.redhat.restdemo.model.repository;
 
-import com.redhat.restdemo.model.entity.Author;
 import com.redhat.restdemo.model.entity.Library;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;

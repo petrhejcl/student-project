@@ -1,8 +1,6 @@
 package com.redhat.restdemo;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.restdemo.model.entity.Author;
 import com.redhat.restdemo.model.entity.Authorship;
 import com.redhat.restdemo.model.entity.Book;
