@@ -9,10 +9,9 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface LibraryRepository extends CrudRepository<Library, Integer> {
-    @Query(value = "SELECT l.name, l.city, l.street, l.street_number, l.description\n" +
-            "FROM library l\n" +
-            "JOIN ownership own ON l.id = own.library_id\n" +
-            "JOIN book b ON b.id = own.book_id\n" +
-            "WHERE b.id = :bookId", nativeQuery = true)
+    @Query(value = "SELECT l.id, l.name, l.city, l.street, l.street_number, l.description " +
+            "FROM library l " +
+            "INNER JOIN ownership o ON l.id = o.library_id " +
+            "WHERE o.book_id = :bookId", nativeQuery = true)
     Iterable<Library> findLibrariesByBook(@Param("bookId") Integer bookId);
 }
