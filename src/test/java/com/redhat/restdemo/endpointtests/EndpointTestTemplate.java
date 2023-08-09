@@ -1,7 +1,7 @@
-package com.redhat.restdemo;
+package com.redhat.restdemo.endpointtests;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.redhat.restdemo.utils.TestRequests;
+import com.redhat.restdemo.testutils.TestRequests;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Value;

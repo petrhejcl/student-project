@@ -58,7 +58,7 @@ public class AuthorController {
         Author updatedAuthor = authorService.updateAuthor(id, author);
         if (updatedAuthor == null) {
             LOGGER.info("Attempt to update invalid author");
-            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         }
         LOGGER.info("Author updated successfully!");
         return new ResponseEntity<>(updatedAuthor, HttpStatus.ACCEPTED);
@@ -69,7 +69,7 @@ public class AuthorController {
         Author deletedAuthor = authorService.deleteAuthor(id);
         if (deletedAuthor == null) {
             LOGGER.info("Attempt to delete invalid author");
-            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         }
         LOGGER.info("Author deleted successfully!");
         return new ResponseEntity<>(deletedAuthor, HttpStatus.ACCEPTED);

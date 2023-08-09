@@ -1,12 +1,15 @@
-package com.redhat.restdemo;
+package com.redhat.restdemo.endpointtests;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.redhat.restdemo.controllers.AuthorController;
 import com.redhat.restdemo.model.entity.*;
 import com.redhat.restdemo.model.repository.*;
-import com.redhat.restdemo.utils.TestData;
-import org.junit.jupiter.api.AfterEach;
+import com.redhat.restdemo.testutils.TestData;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -18,11 +21,14 @@ import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.*;
 
-import static com.redhat.restdemo.utils.TestUtils.countIterable;
+import static com.redhat.restdemo.testutils.TestUtils.countIterable;
+import static com.redhat.restdemo.testutils.TestUtils.resetTestDataIDs;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
 class BookEndpointTests extends EndpointTestTemplate {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AuthorController.class);
+
     @Container
     private static PostgreSQLContainer postgresqlContainer;
 
@@ -74,13 +80,13 @@ class BookEndpointTests extends EndpointTestTemplate {
     }
     
     private void prepareBookSchema() {
-        bookRepository.saveAll(TestData.books);
+        bookRepository.saveAll(new ArrayList<>(TestData.books));
         assertThat(countIterable(bookRepository.findAll()), is((long) TestData.books.size()));
     }
 
     private List<Authorship> prepareAuthorshipSchema() {
         List<Authorship> authorships = new ArrayList<>();
-        for (Map.Entry<Author, Book> entry : TestData.authorship.entrySet()) {
+        for (Map.Entry<Author, Book> entry : new HashSet<>(TestData.authorship.entrySet())) {
             Integer authorId = authorRepository.save(entry.getKey()).getId();
             Integer bookId = bookRepository.save(entry.getValue()).getId();
             Authorship authorship = new Authorship(bookId, authorId);
@@ -102,13 +108,15 @@ class BookEndpointTests extends EndpointTestTemplate {
         return ownerships;
     }
 
-    @AfterEach
+    @BeforeEach
     public void clearRepos() {
         bookRepository.deleteAll();
         authorRepository.deleteAll();
         libraryRepository.deleteAll();
         authorshipRepository.deleteAll();
         ownershipRepository.deleteAll();
+
+        resetTestDataIDs();
     }
 
     @Test
@@ -273,7 +281,7 @@ class BookEndpointTests extends EndpointTestTemplate {
             ResponseEntity<String> response = testRequests.put( putBookUrl + book.getId(), new Book(newIsbn, null, null, null));
             assertThat(response.getStatusCode().is2xxSuccessful(), is(true));
             Book updatedBook = bookRepository.findById(book.getId()).get();
-            Book referenceBook = new Book(newIsbn, book.getName(), book.getYearOfRelease(), book.getGenre());
+            Book referenceBook = new Book(newIsbn, book.getTitle(), book.getYearOfRelease(), book.getGenre());
             assertThat(updatedBook, is(referenceBook));
         }
     }
@@ -301,7 +309,7 @@ class BookEndpointTests extends EndpointTestTemplate {
             ResponseEntity<String> response = testRequests.put( putBookUrl + book.getId(), new Book(null, null, newYearOfRelease, null));
             assertThat(response.getStatusCode().is2xxSuccessful(), is(true));
             Book updatedBook = bookRepository.findById(book.getId()).get();
-            Book referenceBook = new Book(book.getIsbn(), book.getName(), newYearOfRelease, book.getGenre());
+            Book referenceBook = new Book(book.getIsbn(), book.getTitle(), newYearOfRelease, book.getGenre());
             assertThat(updatedBook, is(referenceBook));
         }
     }
@@ -315,7 +323,7 @@ class BookEndpointTests extends EndpointTestTemplate {
             ResponseEntity<String> response = testRequests.put( putBookUrl + book.getId(), new Book(null, null, null, newGenre));
             assertThat(response.getStatusCode().is2xxSuccessful(), is(true));
             Book updatedBook = bookRepository.findById(book.getId()).get();
-            Book referenceBook = new Book(book.getIsbn(), book.getName(), book.getYearOfRelease(), newGenre);
+            Book referenceBook = new Book(book.getIsbn(), book.getTitle(), book.getYearOfRelease(), newGenre);
             assertThat(updatedBook, is(referenceBook));
         }
     }

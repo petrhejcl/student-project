@@ -1,4 +1,4 @@
-package com.redhat.restdemo;
+package com.redhat.restdemo.endpointtests;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -9,8 +9,8 @@ import com.redhat.restdemo.model.entity.Ownership;
 import com.redhat.restdemo.model.repository.BookRepository;
 import com.redhat.restdemo.model.repository.LibraryRepository;
 import com.redhat.restdemo.model.repository.OwnershipRepository;
-import com.redhat.restdemo.utils.TestData;
-import org.junit.jupiter.api.AfterEach;
+import com.redhat.restdemo.testutils.TestData;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -23,7 +23,8 @@ import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.*;
 
-import static com.redhat.restdemo.utils.TestUtils.countIterable;
+import static com.redhat.restdemo.testutils.TestUtils.countIterable;
+import static com.redhat.restdemo.testutils.TestUtils.resetTestDataIDs;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
@@ -87,11 +88,13 @@ class LibraryEndpointTests extends EndpointTestTemplate {
         return ownerships;
     }
 
-    @AfterEach
+    @BeforeEach
     void clearRepos() {
         libraryRepository.deleteAll();
         bookRepository.deleteAll();
         ownershipRepository.deleteAll();
+
+        resetTestDataIDs();
     }
 
     @Test

@@ -69,7 +69,7 @@ public class BookController {
         Book updatedBook = bookService.updateBook(id, book);
         if (updatedBook == null) {
             LOGGER.info("Attempt to update invalid book");
-            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         }
         LOGGER.info("Book updated successfully!");
         return new ResponseEntity<>(updatedBook, HttpStatus.ACCEPTED);
@@ -80,7 +80,7 @@ public class BookController {
         Book deletedBook = bookService.deleteBook(id);
         if (deletedBook == null) {
             LOGGER.info("Attempt to delete invalid book");
-            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         }
         LOGGER.info("Book deleted successfully!");
         return new ResponseEntity<>(deletedBook, HttpStatus.ACCEPTED);

@@ -1,8 +1,11 @@
-package com.redhat.restdemo.utils;
+package com.redhat.restdemo.testutils;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 @Getter
@@ -13,10 +16,6 @@ public class TestRequests {
         restTemplate.setErrorHandler(new CustomResponseErrorHandler());
     }
     private final HttpHeaders headers = new HttpHeaders();
-    public void assertStatus(HttpStatus httpStatus) {
-        assert (httpStatus.value() >= 200);
-        assert (httpStatus.value() < 300);
-    }
 
     public ResponseEntity<String> post(String url, Object object) {
         HttpEntity<Object> request = new HttpEntity<>(object, headers);
