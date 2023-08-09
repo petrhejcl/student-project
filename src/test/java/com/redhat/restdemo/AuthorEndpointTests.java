@@ -94,7 +94,7 @@ class AuthorEndpointTests extends EndpointTestTemplate {
 	}
 
 	@Test
-	void shouldListAllAuthors() throws IOException {
+	void shouldListAllAuthors() throws IOException, InterruptedException {
 		prepareAuthorSchema();
 
 		ResponseEntity<String> response = testRequests.get(baseAuthorUrl);
