@@ -40,7 +40,7 @@ public class AuthorshipController {
         Authorship deletedAuthorship = authorshipService.delete(id);
         if (deletedAuthorship == null) {
             LOGGER.info("Attempt to delete invalid authorship");
-            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         }
         LOGGER.info("Authorship successfully deleted!");
         return new ResponseEntity<>(deletedAuthorship, HttpStatus.OK);

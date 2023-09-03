@@ -18,11 +18,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.Optional;
+
 import static com.redhat.restdemo.utils.TestUtils.countIterable;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class BookServiceTests {
     @InjectMocks
@@ -52,6 +54,28 @@ public class BookServiceTests {
 
         for (Book book : books) {
             assertTrue(TestData.books.contains(book));
+        }
+    }
+
+    @Test
+    void findById() {
+        int currentId = 1;
+
+        for (Book book : TestData.books) {
+            book.setId(currentId);
+            when(bookRepository.findById(book.getId())).thenReturn(Optional.of(book));
+            Optional<Book> foundBook = bookService.findBookById(currentId);
+            assertThat(book, is(foundBook.get()));
+            currentId++;
+        }
+    }
+
+    @Test
+    void add() {
+        for (Book book : TestData.books) {
+            when(bookRepository.save(book)).thenReturn(book);
+            assertThat(bookService.addBook(book), is(book));
+            verify(bookRepository, times(1)).save(book);
         }
     }
 }

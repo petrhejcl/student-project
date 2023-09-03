@@ -17,11 +17,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.Optional;
+
 import static com.redhat.restdemo.utils.TestUtils.countIterable;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class LibraryServiceTests {
     @InjectMocks
@@ -48,6 +50,28 @@ public class LibraryServiceTests {
 
         for (Library library : libraries) {
             assertTrue(TestData.libraries.contains(library));
+        }
+    }
+
+    @Test
+    void findById() {
+        int currentId = 1;
+
+        for (Library library: TestData.libraries) {
+            library.setId(currentId);
+            when(libraryRepository.findById(library.getId())).thenReturn(Optional.of(library));
+            Optional<Library> foundLibrary = libraryService.findLibraryById(currentId);
+            assertThat(library, is(foundLibrary.get()));
+            currentId++;
+        }
+    }
+
+    @Test
+    void add() {
+        for (Library library : TestData.libraries) {
+            when(libraryRepository.save(library)).thenReturn(library);
+            assertThat(libraryService.addLibrary(library), is(library));
+            verify(libraryRepository, times(1)).save(library);
         }
     }
 }

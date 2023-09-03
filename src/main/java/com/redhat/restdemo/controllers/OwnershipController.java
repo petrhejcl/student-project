@@ -40,7 +40,7 @@ public class OwnershipController {
         Ownership deletedOwnership = ownershipService.delete(id);
         if (deletedOwnership == null) {
             LOGGER.info("Attempt to delete invalid ownership");
-            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         }
         LOGGER.info("Ownership deleted successfully");
         return new ResponseEntity<>(deletedOwnership, HttpStatus.OK);
