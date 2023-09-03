@@ -20,10 +20,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 
 import javax.annotation.PostConstruct;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.StreamSupport;
 
 import static com.redhat.restdemo.utils.TestUtils.countIterable;
@@ -78,10 +75,12 @@ class OwnershipEndpointTests extends EndpointTestTemplate {
     }
 
     @BeforeEach
-    public void cleanRepos() {
+    public void clearRepos() {
         ownershipRepository.deleteAll();
         bookRepository.deleteAll();
         bookRepository.deleteAll();
+
+        resetTestDataIDs();
     }
 
     @Test

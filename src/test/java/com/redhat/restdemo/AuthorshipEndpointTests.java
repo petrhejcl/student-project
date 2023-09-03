@@ -19,10 +19,7 @@ import org.testcontainers.junit.jupiter.Container;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.StreamSupport;
 
 import static com.redhat.restdemo.utils.TestUtils.countIterable;
@@ -77,10 +74,12 @@ class AuthorshipEndpointTests extends EndpointTestTemplate {
     }
 
     @AfterEach
-    public void clearRepository() {
+    public void clearRepos() {
         authorshipRepository.deleteAll();
         authorRepository.deleteAll();
         bookRepository.deleteAll();
+
+        resetTestDataIDs();
     }
 
     @Test

@@ -92,6 +92,8 @@ class LibraryEndpointTests extends EndpointTestTemplate {
         libraryRepository.deleteAll();
         bookRepository.deleteAll();
         ownershipRepository.deleteAll();
+
+        resetTestDataIDs();
     }
 
     @Test

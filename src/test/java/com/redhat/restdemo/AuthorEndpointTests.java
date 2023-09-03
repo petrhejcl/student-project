@@ -91,10 +91,12 @@ class AuthorEndpointTests extends EndpointTestTemplate {
 		authorRepository.deleteAll();
 		bookRepository.deleteAll();
 		authorRepository.deleteAll();
+
+		resetTestDataIDs();
 	}
 
 	@Test
-	void shouldListAllAuthors() throws IOException, InterruptedException {
+	void shouldListAllAuthors() throws IOException {
 		prepareAuthorSchema();
 
 		ResponseEntity<String> response = testRequests.get(baseAuthorUrl);

@@ -1,6 +1,10 @@
 package com.redhat.restdemo;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.redhat.restdemo.model.entity.Author;
+import com.redhat.restdemo.model.entity.Book;
+import com.redhat.restdemo.model.entity.Library;
+import com.redhat.restdemo.utils.TestData;
 import com.redhat.restdemo.utils.TestRequests;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.runner.RunWith;
@@ -24,5 +28,17 @@ class EndpointTestTemplate {
 
     protected String createURLWithPort(String uri) {
         return baseUrl + uri;
+    }
+
+    protected void resetTestDataIDs() {
+        for (Book book : TestData.books) {
+            book.setId(null);
+        }
+        for (Author author : TestData.authors) {
+            author.setId(null);
+        }
+        for (Library library : TestData.libraries) {
+            library.setId(null);
+        }
     }
 }
