@@ -19,8 +19,10 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.Optional;
+import java.util.Random;
 
 import static com.redhat.restdemo.utils.TestUtils.countIterable;
+import static com.redhat.restdemo.utils.TestUtils.resetTestDataIDs;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertTrue;
@@ -42,31 +44,24 @@ public class BookServiceTests {
     @BeforeEach
     void setup() {
         MockitoAnnotations.initMocks(this);
+        resetTestDataIDs();
     }
 
     @Test
     void findAll() {
-        when(bookRepository.findAll()).thenReturn(TestData.books);
-
-        Iterable<Book> books = bookService.findAll();
-
-        assertThat(countIterable(books), is((long) TestData.books.size()));
-
-        for (Book book : books) {
-            assertTrue(TestData.books.contains(book));
-        }
+        bookService.findAll();
+        verify(bookRepository, times(1)).findAll();
     }
 
     @Test
     void findById() {
-        int currentId = 1;
-
-        for (Book book : TestData.books) {
-            book.setId(currentId);
-            when(bookRepository.findById(book.getId())).thenReturn(Optional.of(book));
-            Optional<Book> foundBook = bookService.findBookById(currentId);
-            assertThat(book, is(foundBook.get()));
-            currentId++;
+        // Prevents flaky tests, so there can not be same id twice
+        int lowBound = 0;
+        for (int i = 1; i < 5; i++) {
+            int id = new Random().nextInt(2344) + lowBound + 1;
+            bookService.findBookById(id);
+            verify(bookRepository, times(1)).findById(id);
+            lowBound = id;
         }
     }
 

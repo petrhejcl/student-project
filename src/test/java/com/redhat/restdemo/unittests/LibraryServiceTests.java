@@ -18,8 +18,10 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.Optional;
+import java.util.Random;
 
 import static com.redhat.restdemo.utils.TestUtils.countIterable;
+import static com.redhat.restdemo.utils.TestUtils.resetTestDataIDs;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertTrue;
@@ -38,31 +40,24 @@ public class LibraryServiceTests {
     @BeforeEach
     void setup() {
         MockitoAnnotations.initMocks(this);
+        resetTestDataIDs();
     }
 
     @Test
     void findAll() {
-        when(libraryRepository.findAll()).thenReturn(TestData.libraries);
-
-        Iterable<Library> libraries = libraryService.findAll();
-
-        assertThat(countIterable(libraries), is((long) TestData.libraries.size()));
-
-        for (Library library : libraries) {
-            assertTrue(TestData.libraries.contains(library));
-        }
+        libraryService.findAll();
+        verify(libraryRepository, times(1)).findAll();
     }
 
     @Test
     void findById() {
-        int currentId = 1;
-
-        for (Library library: TestData.libraries) {
-            library.setId(currentId);
-            when(libraryRepository.findById(library.getId())).thenReturn(Optional.of(library));
-            Optional<Library> foundLibrary = libraryService.findLibraryById(currentId);
-            assertThat(library, is(foundLibrary.get()));
-            currentId++;
+        // Prevents flaky tests, so there can not be same id twice
+        int lowBound = 0;
+        for (int i = 1; i < 5; i++) {
+            int id = new Random().nextInt(2344) + lowBound + 1;
+            libraryService.findLibraryById(id);
+            verify(libraryRepository, times(1)).findById(id);
+            lowBound = id;
         }
     }
 

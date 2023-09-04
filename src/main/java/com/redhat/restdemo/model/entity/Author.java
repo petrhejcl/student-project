@@ -54,6 +54,7 @@ public class Author {
         return Objects.hash(name, surname, yearOfBirth);
     }
 
+
     public Author(String name, String surname, Integer yearOfBirth) {
         this.name = name;
         this.surname = surname;

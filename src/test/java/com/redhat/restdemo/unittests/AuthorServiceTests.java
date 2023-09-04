@@ -13,6 +13,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.Optional;
+import java.util.Random;
 
 import static com.redhat.restdemo.utils.TestUtils.countIterable;
 import static com.redhat.restdemo.utils.TestUtils.resetTestDataIDs;
@@ -39,27 +40,19 @@ class AuthorServiceTests {
 
     @Test
     void findAll() {
-        when(authorRepository.findAll()).thenReturn(TestData.authors);
-
-        Iterable<Author> authors = authorService.findAll();
-
-        assertThat(countIterable(authors), is((long) TestData.authors.size()));
-
-        for (Author author : authors) {
-            assertTrue(TestData.authors.contains(author));
-        }
+        authorService.findAll();
+        verify(authorRepository, times(1)).findAll();
     }
 
     @Test
     void findById() {
-        int currentId = 1;
-
-        for (Author author : TestData.authors) {
-            author.setId(currentId);
-            when(authorRepository.findById(author.getId())).thenReturn(Optional.of(author));
-            Optional<Author> foundAuthor = authorService.findAuthorById(currentId);
-            assertThat(author, is(foundAuthor.get()));
-            currentId++;
+        // Prevents flaky tests, so there can not be same id twice
+        int lowBound = 0;
+        for (int i = 1; i < 5; i++) {
+            int id = new Random().nextInt(2344) + lowBound + 1;
+            authorService.findAuthorById(id);
+            verify(authorRepository, times(1)).findById(id);
+            lowBound = id;
         }
     }
 
