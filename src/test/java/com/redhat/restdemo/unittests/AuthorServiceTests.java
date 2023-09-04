@@ -22,7 +22,6 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 
 class AuthorServiceTests {
-
     @InjectMocks
     private AuthorService authorService = new AuthorServiceImpl();
 
@@ -75,7 +74,6 @@ class AuthorServiceTests {
         }
     }
 
-    // Must add when for findById
     @Test
     void update() {
         int id = 1;
@@ -86,6 +84,20 @@ class AuthorServiceTests {
             Author newAuthor = new Author("Random", "Author", 1900);
             when(authorRepository.save(author)).thenReturn(author);
             assertThat(authorService.updateAuthor(id, newAuthor), is(newAuthor));
+            id++;
+        }
+    }
+
+    @Test
+    void delete() {
+        int id = 1;
+
+        for (Author author : TestData.authors) {
+            author.setId(id);
+            when(authorRepository.findById(id)).thenReturn(Optional.of(author));
+            assertThat(authorService.deleteAuthor(author.getId()), is(author));
+            verify(authorshipRepository, times(id)).deleteAll(any());
+            verify(authorshipRepository, times(id)).findAuthorshipsByAuthorId(any());
             id++;
         }
     }
