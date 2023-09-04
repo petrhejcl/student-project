@@ -6,7 +6,7 @@ import com.redhat.restdemo.controllers.AuthorController;
 import com.redhat.restdemo.model.entity.*;
 import com.redhat.restdemo.model.repository.*;
 import com.redhat.restdemo.utils.TestData;
-import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.*;
 
 import static com.redhat.restdemo.utils.TestUtils.countIterable;
+import static com.redhat.restdemo.utils.TestUtils.resetTestDataIDs;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
@@ -107,7 +108,7 @@ class BookEndpointTests extends EndpointTestTemplate {
         return ownerships;
     }
 
-    @AfterEach
+    @BeforeEach
     public void clearRepos() {
         bookRepository.deleteAll();
         authorRepository.deleteAll();

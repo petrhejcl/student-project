@@ -24,6 +24,7 @@ import java.util.*;
 import java.util.stream.StreamSupport;
 
 import static com.redhat.restdemo.utils.TestUtils.countIterable;
+import static com.redhat.restdemo.utils.TestUtils.resetTestDataIDs;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 

@@ -29,16 +29,4 @@ class EndpointTestTemplate {
     protected String createURLWithPort(String uri) {
         return baseUrl + uri;
     }
-
-    protected void resetTestDataIDs() {
-        for (Book book : TestData.books) {
-            book.setId(null);
-        }
-        for (Author author : TestData.authors) {
-            author.setId(null);
-        }
-        for (Library library : TestData.libraries) {
-            library.setId(null);
-        }
-    }
 }

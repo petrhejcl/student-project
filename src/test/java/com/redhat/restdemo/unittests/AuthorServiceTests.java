@@ -15,6 +15,7 @@ import org.mockito.MockitoAnnotations;
 import java.util.Optional;
 
 import static com.redhat.restdemo.utils.TestUtils.countIterable;
+import static com.redhat.restdemo.utils.TestUtils.resetTestDataIDs;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertTrue;
@@ -34,6 +35,7 @@ class AuthorServiceTests {
     @BeforeEach
     void setup() {
         MockitoAnnotations.initMocks(this);
+        resetTestDataIDs();
     }
 
     @Test
@@ -64,23 +66,27 @@ class AuthorServiceTests {
 
     @Test
     void add() {
+        int idx = 1;
         for (Author author : TestData.authors) {
             when(authorRepository.save(author)).thenReturn(author);
             assertThat(authorService.addAuthor(author), is(author));
-            verify(authorRepository, times(1)).save(author);
+            verify(authorRepository, times(idx)).save(author);
+            idx++;
         }
     }
 
     // Must add when for findById
-    /*
     @Test
     void update() {
+        int id = 1;
+
         for (Author author : TestData.authors) {
+            author.setId(id);
+            when(authorRepository.findById(id)).thenReturn(Optional.of(author));
             Author newAuthor = new Author("Random", "Author", 1900);
-            when(authorRepository.save(newAuthor)).thenReturn(newAuthor);
-            assertThat(authorService.updateAuthor(1, author), is(author));
-            verify(authorRepository, times(1)).save(author);
+            when(authorRepository.save(author)).thenReturn(author);
+            assertThat(authorService.updateAuthor(id, newAuthor), is(newAuthor));
+            id++;
         }
     }
-     */
 }
