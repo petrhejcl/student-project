@@ -1,6 +1,7 @@
 package com.redhat.restdemo.unittests;
 
 import com.redhat.restdemo.model.entity.Author;
+import com.redhat.restdemo.model.entity.Authorship;
 import com.redhat.restdemo.model.repository.AuthorRepository;
 import com.redhat.restdemo.model.repository.AuthorshipRepository;
 import com.redhat.restdemo.model.service.AuthorService;
@@ -12,6 +13,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 
@@ -58,12 +60,10 @@ class AuthorServiceTests {
 
     @Test
     void add() {
-        int idx = 1;
         for (Author author : TestData.authors) {
             when(authorRepository.save(author)).thenReturn(author);
             assertThat(authorService.addAuthor(author), is(author));
-            verify(authorRepository, times(idx)).save(author);
-            idx++;
+            verify(authorRepository, times(1)).save(author);
         }
     }
 
@@ -72,6 +72,7 @@ class AuthorServiceTests {
         int id = 1;
 
         for (Author author : TestData.authors) {
+            author = new Author(author);
             author.setId(id);
             when(authorRepository.findById(id)).thenReturn(Optional.of(author));
             Author newAuthor = new Author("Random", "Author", 1900);
@@ -87,10 +88,17 @@ class AuthorServiceTests {
 
         for (Author author : TestData.authors) {
             author.setId(id);
+
             when(authorRepository.findById(id)).thenReturn(Optional.of(author));
+
+            Iterable<Authorship> authorships = List.of(new Authorship(new Random().nextInt(100), author.getId()));
+            when(authorshipRepository.findAuthorshipsByAuthorId(author.getId())).thenReturn(authorships);
+
             assertThat(authorService.deleteAuthor(author.getId()), is(author));
-            verify(authorshipRepository, times(id)).deleteAll(any());
-            verify(authorshipRepository, times(id)).findAuthorshipsByAuthorId(any());
+
+            verify(authorshipRepository, times(1)).findAuthorshipsByAuthorId(author.getId());
+            verify(authorshipRepository, times(1)).deleteAll(authorships);
+
             id++;
         }
     }

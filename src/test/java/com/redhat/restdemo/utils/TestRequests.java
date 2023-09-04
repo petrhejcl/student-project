@@ -13,10 +13,6 @@ public class TestRequests {
         restTemplate.setErrorHandler(new CustomResponseErrorHandler());
     }
     private final HttpHeaders headers = new HttpHeaders();
-    public void assertStatus(HttpStatus httpStatus) {
-        assert (httpStatus.value() >= 200);
-        assert (httpStatus.value() < 300);
-    }
 
     public ResponseEntity<String> post(String url, Object object) {
         HttpEntity<Object> request = new HttpEntity<>(object, headers);

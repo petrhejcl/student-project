@@ -1,8 +1,9 @@
 package com.redhat.restdemo.unittests;
 
+import com.redhat.restdemo.model.entity.Author;
+import com.redhat.restdemo.model.entity.Ownership;
 import com.redhat.restdemo.model.entity.Book;
 import com.redhat.restdemo.model.entity.Library;
-import com.redhat.restdemo.model.repository.AuthorshipRepository;
 import com.redhat.restdemo.model.repository.BookRepository;
 import com.redhat.restdemo.model.repository.LibraryRepository;
 import com.redhat.restdemo.model.repository.OwnershipRepository;
@@ -17,6 +18,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 
@@ -67,6 +69,42 @@ public class LibraryServiceTests {
             when(libraryRepository.save(library)).thenReturn(library);
             assertThat(libraryService.addLibrary(library), is(library));
             verify(libraryRepository, times(1)).save(library);
+        }
+    }
+
+    @Test
+    void update() {
+        int id = 1;
+
+        for (Library library : TestData.libraries) {
+            library = new Library(library);
+            library.setId(id);
+            when(libraryRepository.findById(id)).thenReturn(Optional.of(library));
+            Library newLibrary = new Library("Random Library", "Random City", "Random Street", 111, "Random Desc");
+            when(libraryRepository.save(library)).thenReturn(library);
+            assertThat(libraryService.updateLibrary(id, newLibrary), is(newLibrary));
+            id++;
+        }
+    }
+
+    @Test
+    void delete() {
+        int id = 1;
+
+        for (Library library : TestData.libraries) {
+            library.setId(id);
+
+            when(libraryRepository.findById(id)).thenReturn(Optional.of(library));
+
+            Iterable<Ownership> ownerships = List.of(new Ownership(library.getId(), new Random().nextInt(100)));
+            when(ownershipRepository.findOwnershipsByLibraryId(library.getId())).thenReturn(ownerships);
+
+            assertThat(libraryService.deleteLibrary(library.getId()), is(library));
+
+            verify(ownershipRepository, times(1)).findOwnershipsByLibraryId(library.getId());
+            verify(ownershipRepository, times(1)).deleteAll(ownerships);
+
+            id++;
         }
     }
 }
