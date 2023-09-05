@@ -108,7 +108,6 @@ public class BookServiceTests {
             verify(authorshipRepository, times(1)).findAuthorshipsByBookId(book.getId());
             verify(authorshipRepository, times(1)).deleteAll(authorships);
 
-
             id++;
         }
     }
