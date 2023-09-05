@@ -1,4 +1,4 @@
-package com.redhat.restdemo.utils;
+package com.redhat.restdemo.testutils;
 
 import lombok.Getter;
 import lombok.Setter;

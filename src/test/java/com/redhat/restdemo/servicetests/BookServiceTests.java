@@ -1,4 +1,4 @@
-package com.redhat.restdemo.unittests;
+package com.redhat.restdemo.servicetests;
 
 import com.redhat.restdemo.model.entity.*;
 import com.redhat.restdemo.model.repository.AuthorshipRepository;
@@ -6,7 +6,7 @@ import com.redhat.restdemo.model.repository.BookRepository;
 import com.redhat.restdemo.model.repository.OwnershipRepository;
 import com.redhat.restdemo.model.service.BookService;
 import com.redhat.restdemo.model.service.BookServiceImpl;
-import com.redhat.restdemo.utils.TestData;
+import com.redhat.restdemo.testutils.TestData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -17,8 +17,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 
-import static com.redhat.restdemo.utils.TestUtils.countIterable;
-import static com.redhat.restdemo.utils.TestUtils.resetTestDataIDs;
+import static com.redhat.restdemo.testutils.TestUtils.resetTestDataIDs;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertTrue;

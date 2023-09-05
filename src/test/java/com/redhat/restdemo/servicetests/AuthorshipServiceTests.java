@@ -1,7 +1,6 @@
-package com.redhat.restdemo.unittests;
+package com.redhat.restdemo.servicetests;
 
 import com.redhat.restdemo.model.entity.Authorship;
-import com.redhat.restdemo.model.entity.Ownership;
 import com.redhat.restdemo.model.repository.*;
 import com.redhat.restdemo.model.service.*;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,7 +13,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 
-import static com.redhat.restdemo.utils.TestUtils.resetTestDataIDs;
+import static com.redhat.restdemo.testutils.TestUtils.resetTestDataIDs;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;

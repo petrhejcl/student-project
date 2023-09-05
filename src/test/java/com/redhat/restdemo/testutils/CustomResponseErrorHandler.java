@@ -1,4 +1,4 @@
-package com.redhat.restdemo.utils;
+package com.redhat.restdemo.testutils;
 
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.web.client.ResponseErrorHandler;

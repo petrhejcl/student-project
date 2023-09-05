@@ -1,11 +1,11 @@
-package com.redhat.restdemo;
+package com.redhat.restdemo.endpointtests;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.redhat.restdemo.controllers.AuthorController;
 import com.redhat.restdemo.model.entity.*;
 import com.redhat.restdemo.model.repository.*;
-import com.redhat.restdemo.utils.TestData;
+import com.redhat.restdemo.testutils.TestData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -21,8 +21,8 @@ import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.*;
 
-import static com.redhat.restdemo.utils.TestUtils.countIterable;
-import static com.redhat.restdemo.utils.TestUtils.resetTestDataIDs;
+import static com.redhat.restdemo.testutils.TestUtils.countIterable;
+import static com.redhat.restdemo.testutils.TestUtils.resetTestDataIDs;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 

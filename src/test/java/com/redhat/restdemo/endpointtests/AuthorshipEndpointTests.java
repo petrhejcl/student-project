@@ -1,4 +1,4 @@
-package com.redhat.restdemo;
+package com.redhat.restdemo.endpointtests;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.redhat.restdemo.model.entity.Author;
@@ -7,7 +7,7 @@ import com.redhat.restdemo.model.entity.Book;
 import com.redhat.restdemo.model.repository.AuthorRepository;
 import com.redhat.restdemo.model.repository.AuthorshipRepository;
 import com.redhat.restdemo.model.repository.BookRepository;
-import com.redhat.restdemo.utils.TestData;
+import com.redhat.restdemo.testutils.TestData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,8 +22,8 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.StreamSupport;
 
-import static com.redhat.restdemo.utils.TestUtils.countIterable;
-import static com.redhat.restdemo.utils.TestUtils.resetTestDataIDs;
+import static com.redhat.restdemo.testutils.TestUtils.countIterable;
+import static com.redhat.restdemo.testutils.TestUtils.resetTestDataIDs;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 

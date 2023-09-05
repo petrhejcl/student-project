@@ -1,4 +1,4 @@
-package com.redhat.restdemo.utils;
+package com.redhat.restdemo.testutils;
 
 import com.redhat.restdemo.model.entity.Author;
 import com.redhat.restdemo.model.entity.Book;
