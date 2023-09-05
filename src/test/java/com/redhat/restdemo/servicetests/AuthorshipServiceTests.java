@@ -1,8 +1,11 @@
 package com.redhat.restdemo.servicetests;
 
 import com.redhat.restdemo.model.entity.Authorship;
-import com.redhat.restdemo.model.repository.*;
-import com.redhat.restdemo.model.service.*;
+import com.redhat.restdemo.model.repository.AuthorRepository;
+import com.redhat.restdemo.model.repository.AuthorshipRepository;
+import com.redhat.restdemo.model.repository.BookRepository;
+import com.redhat.restdemo.model.service.AuthorshipService;
+import com.redhat.restdemo.model.service.AuthorshipServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;

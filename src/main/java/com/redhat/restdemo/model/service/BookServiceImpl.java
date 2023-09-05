@@ -62,9 +62,9 @@ public class BookServiceImpl implements BookService{
         if (newIsbn != null) {
             updatedBook.setIsbn(newIsbn);
         }
-        String newName = book.getName();
+        String newName = book.getTitle();
         if (newName != null) {
-            updatedBook.setName(newName);
+            updatedBook.setTitle(newName);
         }
         Integer newYearOfRelease = book.getYearOfRelease();
         if (newYearOfRelease != null) {

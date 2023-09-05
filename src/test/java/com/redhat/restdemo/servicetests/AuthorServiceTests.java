@@ -20,7 +20,6 @@ import java.util.Random;
 import static com.redhat.restdemo.testutils.TestUtils.resetTestDataIDs;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 
 class AuthorServiceTests {

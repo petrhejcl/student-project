@@ -20,7 +20,10 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 
 import javax.annotation.PostConstruct;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Random;
 import java.util.stream.StreamSupport;
 
 import static com.redhat.restdemo.testutils.TestUtils.countIterable;

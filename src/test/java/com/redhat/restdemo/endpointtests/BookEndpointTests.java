@@ -281,7 +281,7 @@ class BookEndpointTests extends EndpointTestTemplate {
             ResponseEntity<String> response = testRequests.put( putBookUrl + book.getId(), new Book(newIsbn, null, null, null));
             assertThat(response.getStatusCode().is2xxSuccessful(), is(true));
             Book updatedBook = bookRepository.findById(book.getId()).get();
-            Book referenceBook = new Book(newIsbn, book.getName(), book.getYearOfRelease(), book.getGenre());
+            Book referenceBook = new Book(newIsbn, book.getTitle(), book.getYearOfRelease(), book.getGenre());
             assertThat(updatedBook, is(referenceBook));
         }
     }
@@ -309,7 +309,7 @@ class BookEndpointTests extends EndpointTestTemplate {
             ResponseEntity<String> response = testRequests.put( putBookUrl + book.getId(), new Book(null, null, newYearOfRelease, null));
             assertThat(response.getStatusCode().is2xxSuccessful(), is(true));
             Book updatedBook = bookRepository.findById(book.getId()).get();
-            Book referenceBook = new Book(book.getIsbn(), book.getName(), newYearOfRelease, book.getGenre());
+            Book referenceBook = new Book(book.getIsbn(), book.getTitle(), newYearOfRelease, book.getGenre());
             assertThat(updatedBook, is(referenceBook));
         }
     }
@@ -323,7 +323,7 @@ class BookEndpointTests extends EndpointTestTemplate {
             ResponseEntity<String> response = testRequests.put( putBookUrl + book.getId(), new Book(null, null, null, newGenre));
             assertThat(response.getStatusCode().is2xxSuccessful(), is(true));
             Book updatedBook = bookRepository.findById(book.getId()).get();
-            Book referenceBook = new Book(book.getIsbn(), book.getName(), book.getYearOfRelease(), newGenre);
+            Book referenceBook = new Book(book.getIsbn(), book.getTitle(), book.getYearOfRelease(), newGenre);
             assertThat(updatedBook, is(referenceBook));
         }
     }

@@ -1,6 +1,8 @@
 package com.redhat.restdemo.servicetests;
 
-import com.redhat.restdemo.model.entity.*;
+import com.redhat.restdemo.model.entity.Authorship;
+import com.redhat.restdemo.model.entity.Book;
+import com.redhat.restdemo.model.entity.Ownership;
 import com.redhat.restdemo.model.repository.AuthorshipRepository;
 import com.redhat.restdemo.model.repository.BookRepository;
 import com.redhat.restdemo.model.repository.OwnershipRepository;
@@ -20,7 +22,6 @@ import java.util.Random;
 import static com.redhat.restdemo.testutils.TestUtils.resetTestDataIDs;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 
 public class BookServiceTests {

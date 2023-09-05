@@ -24,8 +24,8 @@ public class Book {
     @Column(name = "isbn")
     Long isbn;
 
-    @Column(name = "name")
-    private String name;
+    @Column(name = "title")
+    private String title;
 
     @Column(name = "year_of_release")
     private Integer yearOfRelease;
@@ -41,24 +41,24 @@ public class Book {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Book book = (Book) o;
-        return Objects.equals(isbn, book.isbn) && Objects.equals(name, book.name) && Objects.equals(yearOfRelease, book.yearOfRelease) && Objects.equals(genre, book.genre);
+        return Objects.equals(isbn, book.isbn) && Objects.equals(title, book.title) && Objects.equals(yearOfRelease, book.yearOfRelease) && Objects.equals(genre, book.genre);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(isbn, name, yearOfRelease, genre);
+        return Objects.hash(isbn, title, yearOfRelease, genre);
     }
 
     public Book(Book book) {
         isbn = book.getIsbn();
-        name = book.getName();
+        title = book.getTitle();
         yearOfRelease = book.getYearOfRelease();
         genre = book.getGenre();
     }
 
-    public Book(Long isbn, String name, Integer yearOfRelease, String genre) {
+    public Book(Long isbn, String title, Integer yearOfRelease, String genre) {
         this.isbn = isbn;
-        this.name = name;
+        this.title = title;
         this.yearOfRelease = yearOfRelease;
         this.genre = genre;
     }
