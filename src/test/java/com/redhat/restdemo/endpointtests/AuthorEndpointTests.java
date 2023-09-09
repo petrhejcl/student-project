@@ -19,7 +19,11 @@ import org.testcontainers.junit.jupiter.Container;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Random;
 
 import static com.redhat.restdemo.testutils.TestUtils.countIterable;
 import static com.redhat.restdemo.testutils.TestUtils.resetTestDataIDs;
