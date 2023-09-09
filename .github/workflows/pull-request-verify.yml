@@ -23,4 +23,3 @@ jobs:
 
       - name: Run tests and build app with Maven
         run: mvn clean install
-
