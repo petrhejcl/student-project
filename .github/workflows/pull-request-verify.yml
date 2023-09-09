@@ -11,6 +11,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           java-version: '11'
+          distribution: adopt-hotspot
 
       - name: Run tests and build app with Maven
         run: mvn clean install
