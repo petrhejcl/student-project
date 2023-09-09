@@ -20,3 +20,7 @@ jobs:
         run: |
           docker compose build
         working-directory: ./docker
+
+      - name: Run tests and build app with Maven
+        run: mvn clean install
+
