@@ -1,11 +1,7 @@
 name: Build and Deploy Docker image
-on:
-  pull_request_review:
-    types: [submitted]
-
+on: push
 jobs:
-  approved:
-    if: github.event.review.state == 'approved'
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -20,7 +16,18 @@ jobs:
       - name: Build app with Maven
         run: mvn install -DskipTests
 
+      - name: Docker login
+        env:
+          DOCKER_USERNAME: ${{secrets.DOCKER_USERNAME}}
+          DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
+        run: |
+          docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+
       - name: Docker Compose Build
         run: |
           docker compose build
         working-directory: ./docker
+
+      - name: Docker push
+        run: |
+          docker push quay.io/pethej/student-project:latest
