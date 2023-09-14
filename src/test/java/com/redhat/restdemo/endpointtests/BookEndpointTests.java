@@ -42,8 +42,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
 class BookEndpointTests extends EndpointTestTemplate {
-    private static final Logger LOGGER = LoggerFactory.getLogger(AuthorController.class);
-
     @Container
     private static PostgreSQLContainer postgresqlContainer;
 
