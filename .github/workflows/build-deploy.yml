@@ -1,7 +1,10 @@
 name: Build and Deploy Docker image
-on: push
+on:
+  pull_request_review:
+    types: [submitted]
 jobs:
-  build-and-deploy:
+  approved:
+    if: github.event.review.state == 'approved'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -29,9 +32,11 @@ jobs:
         working-directory: ./docker
 
       - name: Docker compose set tag
+        env:
+          QUAY_REPOSITORY: ${{secrets.QUAY_REPOSITORY}}
         run: |
-          docker tag docker-spring-boot-postgres quay.io/pethej/student-project
+          docker tag docker-spring-boot-postgres $QUAY_REPOSITORY
 
       - name: Docker push
         run: |
-          docker push quay.io/pethej/student-project
+          docker push $QUAY_REPOSITORY
