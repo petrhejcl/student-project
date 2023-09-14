@@ -1,7 +1,11 @@
-name: Pull Request Verify
-on: pull_request
+name: Build and Deploy Docker image
+on:
+  pull_request_review:
+    types: [submitted]
+
 jobs:
-  test-and-build:
+  approved:
+    if: github.event.review.state == 'approved'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -13,8 +17,8 @@ jobs:
           java-version: '11'
           distribution: adopt-hotspot
 
-      - name: Run tests and build app with Maven
-        run: mvn clean install
+      - name: Build app with Maven
+        run: mvn install -DskipTests
 
       - name: Docker Compose Build
         run: |
