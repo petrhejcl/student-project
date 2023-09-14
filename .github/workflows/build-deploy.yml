@@ -28,6 +28,10 @@ jobs:
           docker compose build
         working-directory: ./docker
 
+      - name: Docker compose set tag
+        run: |
+          docker tag docker-spring-boot-postgres quay.io/pethej/student-project
+
       - name: Docker push
         run: |
-          docker push quay.io/pethej/student-project:latest
+          docker push quay.io/pethej/student-project
