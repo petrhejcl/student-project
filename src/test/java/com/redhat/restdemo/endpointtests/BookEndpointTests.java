@@ -3,8 +3,16 @@ package com.redhat.restdemo.endpointtests;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.redhat.restdemo.controllers.AuthorController;
-import com.redhat.restdemo.model.entity.*;
-import com.redhat.restdemo.model.repository.*;
+import com.redhat.restdemo.model.entity.Author;
+import com.redhat.restdemo.model.entity.Authorship;
+import com.redhat.restdemo.model.entity.Book;
+import com.redhat.restdemo.model.entity.Library;
+import com.redhat.restdemo.model.entity.Ownership;
+import com.redhat.restdemo.model.repository.AuthorRepository;
+import com.redhat.restdemo.model.repository.AuthorshipRepository;
+import com.redhat.restdemo.model.repository.BookRepository;
+import com.redhat.restdemo.model.repository.LibraryRepository;
+import com.redhat.restdemo.model.repository.OwnershipRepository;
 import com.redhat.restdemo.testutils.TestData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,7 +27,14 @@ import org.testcontainers.junit.jupiter.Container;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Random;
+import java.util.Set;
 
 import static com.redhat.restdemo.testutils.TestUtils.countIterable;
 import static com.redhat.restdemo.testutils.TestUtils.resetTestDataIDs;
@@ -27,8 +42,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
 class BookEndpointTests extends EndpointTestTemplate {
-    private static final Logger LOGGER = LoggerFactory.getLogger(AuthorController.class);
-
     @Container
     private static PostgreSQLContainer postgresqlContainer;
 
