@@ -40,3 +40,4 @@ jobs:
       - name: Docker push
         run: |
           docker push $QUAY_REPOSITORY
+
